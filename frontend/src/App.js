@@ -12,6 +12,7 @@ import Projects from './components/Projects';
 import Tasks from './components/Tasks';
 import Notifications from './components/Notifications';
 import AuthModal from './components/AuthModal';
+import { NotificationProvider } from './contexts/NotificationContext';
 
 function App() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -27,33 +28,35 @@ function App() {
   return (
     <Router>
       <CssBaseline />
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" style={{ flexGrow: 1 }}>
-            Task Manager
-          </Typography>
-          <Button color="inherit" component={Link} to="/">
-            Projects
-          </Button>
-          <Button color="inherit" component={Link} to="/tasks">
-            Tasks
-          </Button>
-          <Button color="inherit" component={Link} to="/notifications">
-            Notifications
-          </Button>
-          <Button color="inherit" onClick={handleAuthModalOpen}>
-            Login / Sign Up
-          </Button>
-        </Toolbar>
-      </AppBar>
-      <Container>
-        <Routes>
-          <Route path="/" element={<Projects />} />
-          <Route path="/tasks" element={<Tasks />} />
-          <Route path="/notifications" element={<Notifications />} />
-        </Routes>
-      </Container>
-      <AuthModal open={authModalOpen} onClose={handleAuthModalClose} />
+      <NotificationProvider>
+        <AppBar position="static">
+          <Toolbar>
+            <Typography variant="h6" style={{ flexGrow: 1 }}>
+              Task Manager
+            </Typography>
+            <Button color="inherit" component={Link} to="/">
+              Projects
+            </Button>
+            <Button color="inherit" component={Link} to="/tasks">
+              Tasks
+            </Button>
+            <Button color="inherit" component={Link} to="/notifications">
+              Notifications
+            </Button>
+            <Button color="inherit" onClick={handleAuthModalOpen}>
+              Login / Sign Up
+            </Button>
+          </Toolbar>
+        </AppBar>
+        <Container>
+          <Routes>
+            <Route path="/" element={<Projects />} />
+            <Route path="/tasks" element={<Tasks />} />
+            <Route path="/notifications" element={<Notifications />} />
+          </Routes>
+        </Container>
+        <AuthModal open={authModalOpen} onClose={handleAuthModalClose} />
+      </NotificationProvider>
     </Router>
   );
 }
