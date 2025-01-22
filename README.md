@@ -14,10 +14,12 @@ git clone git@github.com:valmtv/task-manager.git
 
 ### 2. Initialize the Database
 
+```
 mysql -u root -p
 CREATE DATABASE task-manager
 exit
 mysql -u root -p task-manager < init.sql;
+```
 
 ### 3. Install Dependencies
 
