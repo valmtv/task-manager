@@ -37,7 +37,7 @@ const pool = mysql.createPool({
 
 app.post('/api/register', async (req, res) => {
   const { name, email, password } = req.body;
-  const role = 'Team Member'; // Default role for new users
+  const role = 'Team Member';
 
 
   try {
@@ -109,6 +109,18 @@ app.get('/api/projects', async (req, res) => {
   }
 });
 
+app.get('/api/users/team-members', async (req, res) => {
+  try {
+    const [users] = await pool.query(
+      'SELECT id, name, email, role FROM Users WHERE role = "Team Member" ORDER BY name'
+    );
+    res.json(users);
+  } catch (err) {
+    console.error('Error fetching team members:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/projects', async (req, res) => {
   const { name, description, start_date, end_date, status } = req.body;
   try {
@@ -134,11 +146,11 @@ app.get('/api/tasks', async (req, res) => {
 });
 
 app.post('/api/tasks', async (req, res) => {
-  const { project_id, name, description, status, priority } = req.body;
+  const { project_id, name, description, assigned_to, status, priority, due_date } = req.body;
   try {
     const [result] = await pool.query(
-      'INSERT INTO Tasks (project_id, name, description, status, priority) VALUES (?, ?, ?, ?, ?)',
-      [project_id, name, description, status, priority]
+      'INSERT INTO Tasks (project_id, name, description, assigned_to, status, priority, due_date) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [project_id, name, description, assigned_to, status, priority, due_date]
     );
     res.status(201).json({ id: result.insertId, message: 'Task created successfully' });
   } catch (err) {

@@ -8,7 +8,6 @@ function Projects() {
   const [selectedProject, setSelectedProject] = useState(null);
   const [isCreateTaskModalOpen, setIsCreateTaskModalOpen] = useState(false);
 
-  // Fetch all projects
   useEffect(() => {
     const fetchProjects = async () => {
       try {
