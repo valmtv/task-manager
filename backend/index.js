@@ -45,7 +45,7 @@ app.post('/api/register', async (req, res) => {
       'INSERT INTO Users (name, email, role, password) VALUES (?, ?, ?, ?)',
       [name, email, role, hashedPassword]
     );
-    const token = jwt.sign({ id: result.insertId, name, role }, 'your-secret-key', { expiresIn: '1h' });
+    const token = jwt.sign({ id: result.insertId, name, role }, process.env.JWT_KEY , { expiresIn: '1h' });
 
 
     res.status(201).json({ id: result.insertId, message: 'User registered successfully' });
@@ -71,7 +71,7 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ error: 'Invalid email or password' });
     }
 
-    const token = jwt.sign({ id: user.id, name: user.name, role: user.role }, 'your-secret-key', { expiresIn: '1h' });
+    const token = jwt.sign({ id: user.id, name: user.name, role: user.role }, process.env.JWT_KEY , { expiresIn: '1h' });
 
     res.json({ token });
   } catch (err) {
@@ -85,7 +85,7 @@ const authMiddleware = (req, res, next) => {
   if (!token) return res.status(401).json({ error: 'Access denied. No token provided.' });
 
   try {
-    const decoded = jwt.verify(token, 'your-secret-key');
+    const decoded = jwt.verify(token, process.env.JWT_KEY);
     req.user = decoded;
     next();
   } catch (err) {
