@@ -45,6 +45,8 @@ app.post('/api/register', async (req, res) => {
       'INSERT INTO Users (name, email, role, password) VALUES (?, ?, ?, ?)',
       [name, email, role, hashedPassword]
     );
+    const token = jwt.sign({ id: result.insertId, name, role }, 'your-secret-key', { expiresIn: '1h' });
+
 
     res.status(201).json({ id: result.insertId, message: 'User registered successfully' });
   } catch (err) {
@@ -69,7 +71,7 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ error: 'Invalid email or password' });
     }
 
-    const token = jwt.sign({ id: user.id, role: user.role }, 'your-secret-key', { expiresIn: '1h' });
+    const token = jwt.sign({ id: user.id, name: user.name, role: user.role }, 'your-secret-key', { expiresIn: '1h' });
 
     res.json({ token });
   } catch (err) {

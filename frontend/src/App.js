@@ -10,6 +10,7 @@ import {
   Menu,
   MenuItem,
   Avatar,
+  Divider,
 } from '@mui/material';
 import Projects from './components/Projects';
 import Tasks from './components/Tasks';
@@ -22,7 +23,7 @@ import { jwtDecode } from 'jwt-decode';
 function App() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [user, setUser] = useState({ name: '', role: '' });
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const token = getAuthToken();
@@ -76,7 +77,7 @@ function App() {
               <Button
                 color="inherit"
                 onClick={handleMenuOpen}
-                startIcon={<Avatar>{user.name ? user.name[0] : ''}</Avatar>}
+                startIcon={<Avatar/>}
               >
                 {user.name}
               </Button>
@@ -85,9 +86,14 @@ function App() {
                 open={Boolean(anchorEl)}
                 onClose={handleMenuClose}
               >
-                <MenuItem disabled>role: {user.role}</MenuItem>
+                <MenuItem disabled>
+                  <Typography variant="body2" color="textSecondary">
+                    {user.role}
+                  </Typography>
+                </MenuItem>
+                <Divider />
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
-              </Menu>
+             </Menu>
             </div>
           ) : (
             <Button color="inherit" onClick={() => setAuthModalOpen(true)}>
