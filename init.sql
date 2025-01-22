@@ -52,6 +52,16 @@ CREATE TABLE Resources (
     cost DECIMAL(10, 2)
 );
 
+-- Create the ProjectResources table
+CREATE TABLE ProjectResources ( 
+    project_id INT NOT NULL,
+    resource_id INT NOT NULL,
+    PRIMARY KEY (project_id, resource_id),
+    CONSTRAINT fk_project_resources_project FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+    CONSTRAINT fk_project_resources_resource FOREIGN KEY (resource_id) REFERENCES resources(id) ON DELETE CASCADE
+);
+
+
 -- Create the TaskDependencies table
 CREATE TABLE TaskDependencies (
     id INT AUTO_INCREMENT PRIMARY KEY,
