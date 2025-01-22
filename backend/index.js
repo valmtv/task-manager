@@ -145,6 +145,36 @@ app.get('/api/tasks', async (req, res) => {
   }
 });
 
+app.get('/api/projects/:projectId/resources', async (req, res) => {
+  try {
+    const [resources] = await pool.query(
+      `SELECT r.id, r.name, r.type, r.quantity, r.cost
+       FROM Resources r
+       JOIN ProjectResources pr ON r.id = pr.resource_id
+       WHERE pr.project_id = ?`,
+      [req.params.projectId]
+    );
+    res.json(resources);
+  } catch (err) {
+    console.error('Error fetching project resources:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/task-dependencies', async (req, res) => {
+  const { task_id, dependent_task_id } = req.body;
+  try {
+    await pool.query(
+      'INSERT INTO TaskDependencies (task_id, dependent_task_id) VALUES (?, ?)',
+      [task_id, dependent_task_id]
+    );
+    res.status(201).json({ message: 'Task dependency created successfully' });
+  } catch (err) {
+    console.error('Error creating task dependency:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/tasks', async (req, res) => {
   const { project_id, name, description, assigned_to, status, priority, due_date } = req.body;
   try {
@@ -158,6 +188,8 @@ app.post('/api/tasks', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
 
 
 

@@ -20,8 +20,10 @@ function CreateTaskModal({ open, onClose, projectId }) {
   const [assignedTo, setAssignedTo] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [priority, setPriority] = useState('Medium');
+  const [dependentTask, setDependentTask] = useState('');
   const [errors, setErrors] = useState({});
   const [users, setUsers] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const { addNotification } = useContext(NotificationContext);
 
   const getTomorrowDate = () => {
@@ -41,16 +43,27 @@ function CreateTaskModal({ open, onClose, projectId }) {
       }
     };
 
+    const fetchTasks = async () => {
+      try {
+        const response = await api.get('/tasks');
+        setTasks(response.data);
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+        addNotification('Failed to load tasks', 'error');
+      }
+    };
+
     if (open) {
       fetchUsers();
+      fetchTasks();
     }
-  }, [open]);
+  }, [open, addNotification]);
 
   const validateForm = () => {
     const newErrors = {};
     if (!taskName.trim()) newErrors.taskName = 'Task name is required';
     if (!projectId) newErrors.projectId = 'Project ID is required';
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -70,7 +83,16 @@ function CreateTaskModal({ open, onClose, projectId }) {
       };
 
       const response = await api.post('/tasks', newTask);
-      console.log('Task created:', response.data);
+      const createdTask = response.data;
+
+      if (dependentTask) {
+        await api.post('/task-dependencies', {
+          task_id: createdTask.id,
+          dependent_task_id: dependentTask,
+        });
+        addNotification('Task dependency created successfully', 'success');
+      }
+
       addNotification(`New task created: ${taskName}`, 'success');
       handleClose();
     } catch (error) {
@@ -85,6 +107,7 @@ function CreateTaskModal({ open, onClose, projectId }) {
     setAssignedTo('');
     setDueDate('');
     setPriority('Medium');
+    setDependentTask('');
     setErrors({});
     onClose();
   };
@@ -103,7 +126,7 @@ function CreateTaskModal({ open, onClose, projectId }) {
           helperText={errors.taskName}
           required
         />
-        
+
         <TextField
           fullWidth
           label="Task Description"
@@ -139,7 +162,7 @@ function CreateTaskModal({ open, onClose, projectId }) {
             shrink: true,
           }}
           inputProps={{
-            min: getTomorrowDate()
+            min: getTomorrowDate(),
           }}
         />
 
@@ -161,8 +184,27 @@ function CreateTaskModal({ open, onClose, projectId }) {
             ))}
           </Select>
         </FormControl>
+
+        <FormControl fullWidth margin="normal">
+          <InputLabel id="dependent-task-label">Dependent Task</InputLabel>
+          <Select
+            labelId="dependent-task-label"
+            value={dependentTask}
+            label="Dependent Task"
+            onChange={(e) => setDependentTask(e.target.value)}
+          >
+            <MenuItem value="">
+              <em>None</em>
+            </MenuItem>
+            {tasks.map((task) => (
+              <MenuItem key={task.id} value={task.id}>
+                {task.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </DialogContent>
-      
+
       <DialogActions>
         <Button onClick={handleClose} color="secondary">
           Cancel
