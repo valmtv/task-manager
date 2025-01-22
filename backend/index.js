@@ -36,7 +36,9 @@ const pool = mysql.createPool({
 
 
 app.post('/api/register', async (req, res) => {
-  const { name, email, role, password } = req.body;
+  const { name, email, password } = req.body;
+  const role = 'Team Member'; // Default role for new users
+
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -48,7 +50,7 @@ app.post('/api/register', async (req, res) => {
     const token = jwt.sign({ id: result.insertId, name, role }, process.env.JWT_KEY , { expiresIn: '1h' });
 
 
-    res.status(201).json({ id: result.insertId, message: 'User registered successfully' });
+    res.status(201).json({ id: result.insertId, name, role, token, message: 'User registered successfully' });
   } catch (err) {
     console.error('Error registering user:', err);
     res.status(500).json({ error: 'Failed to register user' });
