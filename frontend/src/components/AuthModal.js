@@ -9,14 +9,42 @@ import {
   Tabs,
   Tab,
   Box,
-  Typography,
 } from '@mui/material';
+import api, { setAuthToken } from '../api/api';
+import { jwtDecode } from 'jwt-decode';
 
-function AuthModal({ open, onClose }) {
-  const [tabValue, setTabValue] = useState(0); // 0 for Login, 1 for Sign Up
+function AuthModal({ open, onClose, setUser }) {
+  const [tabValue, setTabValue] = useState(0);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
+  };
+
+  const handleLogin = async () => {
+    try {
+      const response = await api.post('/login', { email, password });
+      setAuthToken(response.data.token);
+      const decoded = jwtDecode(response.data.token);
+      setUser(decoded);
+      onClose();
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
+  };
+
+  const handleRegister = async () => {
+    try {
+      const response = await api.post('/register', { name, email, password });
+      setAuthToken(response.data.token);
+      const decoded = jwtDecode(response.data.token);
+      setUser(decoded);
+      onClose();
+    } catch (error) {
+      console.error('Registration failed:', error);
+    }
   };
 
   return (
@@ -28,55 +56,46 @@ function AuthModal({ open, onClose }) {
         </Tabs>
       </DialogTitle>
       <DialogContent>
-        {tabValue === 0 && (
+        {tabValue === 0 ? (
           <Box>
-            <Typography variant="h6" gutterBottom>
-              Welcome Back!
-            </Typography>
             <TextField
               fullWidth
               label="Email"
-              variant="outlined"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               margin="normal"
             />
             <TextField
               fullWidth
               label="Password"
               type="password"
-              variant="outlined"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               margin="normal"
             />
           </Box>
-        )}
-        {tabValue === 1 && (
+        ) : (
           <Box>
-            <Typography variant="h6" gutterBottom>
-              Create an Account
-            </Typography>
             <TextField
               fullWidth
               label="Name"
-              variant="outlined"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               margin="normal"
             />
             <TextField
               fullWidth
               label="Email"
-              variant="outlined"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               margin="normal"
             />
             <TextField
               fullWidth
               label="Password"
               type="password"
-              variant="outlined"
-              margin="normal"
-            />
-            <TextField
-              fullWidth
-              label="Confirm Password"
-              type="password"
-              variant="outlined"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               margin="normal"
             />
           </Box>
@@ -84,9 +103,9 @@ function AuthModal({ open, onClose }) {
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="secondary">
-          Close
+          Cancel
         </Button>
-        <Button variant="contained" color="primary">
+        <Button onClick={tabValue === 0 ? handleLogin : handleRegister} color="primary">
           {tabValue === 0 ? 'Login' : 'Sign Up'}
         </Button>
       </DialogActions>

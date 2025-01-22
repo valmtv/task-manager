@@ -25,14 +25,12 @@ function CreateTaskModal({ open, onClose, projectId }) {
         priority: 'Medium',
       };
 
-      // Send the new task to the backend
+
       const response = await api.post('/tasks', newTask);
       console.log('Task created:', response.data);
 
-      // Add a notification
       addNotification(`New task created: ${taskName}`, 'Task Update');
 
-      // Close the modal
       onClose();
     } catch (error) {
       console.error('Error creating task:', error);

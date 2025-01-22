@@ -2,6 +2,9 @@ const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
 
 const app = express();
 const port = 5001;
@@ -30,6 +33,67 @@ const pool = mysql.createPool({
     console.error('Error connecting to MySQL:', err);
   }
 })();
+
+
+app.post('/api/register', async (req, res) => {
+  const { name, email, role, password } = req.body;
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const [result] = await pool.query(
+      'INSERT INTO Users (name, email, role, password) VALUES (?, ?, ?, ?)',
+      [name, email, role, hashedPassword]
+    );
+
+    res.status(201).json({ id: result.insertId, message: 'User registered successfully' });
+  } catch (err) {
+    console.error('Error registering user:', err);
+    res.status(500).json({ error: 'Failed to register user' });
+  }
+});
+
+app.post('/api/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const [users] = await pool.query('SELECT * FROM Users WHERE email = ?', [email]);
+    if (users.length === 0) {
+      return res.status(400).json({ error: 'Invalid email or password' });
+    }
+
+    const user = users[0];
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(400).json({ error: 'Invalid email or password' });
+    }
+
+    const token = jwt.sign({ id: user.id, role: user.role }, 'your-secret-key', { expiresIn: '1h' });
+
+    res.json({ token });
+  } catch (err) {
+    console.error('Error logging in:', err);
+    res.status(500).json({ error: 'Failed to log in' });
+  }
+});
+
+const authMiddleware = (req, res, next) => {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Access denied. No token provided.' });
+
+  try {
+    const decoded = jwt.verify(token, 'your-secret-key');
+    req.user = decoded;
+    next();
+  } catch (err) {
+    res.status(400).json({ error: 'Invalid token.' });
+  }
+};
+
+app.get('/api/protected', authMiddleware, (req, res) => {
+  res.json({ message: 'This is a protected route', user: req.user });
+});
 
 app.get('/api/projects', async (req, res) => {
   try {

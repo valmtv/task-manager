@@ -21,22 +21,18 @@ function Projects() {
     fetchProjects();
   }, []);
 
-  // Handle project click
   const handleProjectClick = (project) => {
     setSelectedProject(project);
   };
 
-  // Handle "Back" button click
   const handleBackClick = () => {
     setSelectedProject(null);
   };
 
-  // Handle "Create Task" button click
   const handleCreateTaskClick = () => {
     setIsCreateTaskModalOpen(true);
   };
 
-  // Handle modal close
   const handleCreateTaskModalClose = () => {
     setIsCreateTaskModalOpen(false);
   };
