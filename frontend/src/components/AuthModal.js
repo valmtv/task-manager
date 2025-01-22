@@ -10,11 +10,11 @@ import {
   Tab,
   Box,
 } from '@mui/material';
-import api, { setAuthToken } from '../api/api'; // Combined import
+import api, { setAuthToken } from '../api/api';
 import { jwtDecode } from 'jwt-decode';
 
 function AuthModal({ open, onClose, setUser, tab }) {
-  const [tabValue, setTabValue] = useState(tab || 0); // Set initial tab value
+  const [tabValue, setTabValue] = useState(tab || 0);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');

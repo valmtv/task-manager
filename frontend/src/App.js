@@ -27,7 +27,7 @@ function App() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = getAuthToken();
@@ -37,6 +37,8 @@ function App() {
     }
   }, []);
 
+
+
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -45,11 +47,11 @@ function App() {
     setAnchorEl(null);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem('token');
-    setUser(null);
+    await setUser(null);
     handleMenuClose();
-    navigate('/'); // Redirect to welcome page
+    navigate('/');
   };
 
   return (
