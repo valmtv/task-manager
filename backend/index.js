@@ -145,6 +145,39 @@ app.get('/api/tasks', async (req, res) => {
   }
 });
 
+app.get('/api/tasks-with-dependencies', async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        t.*,
+        d.dependent_task_id,
+        td.name AS dependent_task_name,
+        u.name AS assigned_to_name
+      FROM Tasks t
+      LEFT JOIN TaskDependencies d ON t.id = d.task_id
+      LEFT JOIN Tasks td ON d.dependent_task_id = td.id
+      LEFT JOIN Users u ON t.assigned_to = u.id
+    `;
+    const [rows] = await pool.query(query);
+    res.json(rows);
+  } catch (err) {
+    console.error('Error executing query:', err);
+    res.status(500).json({ error: 'Error executing query' });
+  }
+});
+
+app.post('/api/tasks/update-status', async (req, res) => {
+  const { taskId, newStatus } = req.body;
+  try {
+    await pool.query('UPDATE Tasks SET status = ? WHERE id = ?', [newStatus, taskId]);
+    res.status(200).json({ message: 'Task status updated successfully' });
+  } catch (error) {
+    console.error('Error updating task status:', error);
+    res.status(500).json({ error: 'Failed to update task status' });
+  }
+});
+
+
 app.get('/api/projects/:projectId/resources', async (req, res) => {
   try {
     const [resources] = await pool.query(
@@ -172,6 +205,16 @@ app.post('/api/task-dependencies', async (req, res) => {
   } catch (err) {
     console.error('Error creating task dependency:', err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/task-dependencies', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM TaskDependencies');
+    res.json(rows);
+  } catch (err) {
+    console.error('Error executing query:', err);
+    res.status(500).json({ error: 'Error executing query' });
   }
 });
 
