@@ -45,7 +45,8 @@ function CreateTaskModal({ open, onClose, projectId }) {
 
     const fetchTasks = async () => {
       try {
-        const response = await api.get('/tasks');
+        const response = await api.get(`/tasks?project_id=${projectId}`);
+
         setTasks(response.data);
       } catch (error) {
         console.error('Error fetching tasks:', error);
@@ -57,7 +58,7 @@ function CreateTaskModal({ open, onClose, projectId }) {
       fetchUsers();
       fetchTasks();
     }
-  }, [open, addNotification]);
+  }, [open, projectId, addNotification]);
 
   const validateForm = () => {
     const newErrors = {};

@@ -39,7 +39,6 @@ app.post('/api/register', async (req, res) => {
   const { name, email, password } = req.body;
   const role = 'Team Member';
 
-
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -136,14 +135,25 @@ app.post('/api/projects', async (req, res) => {
 });
 
 app.get('/api/tasks', async (req, res) => {
+  const { project_id } = req.query;
+
   try {
-    const [rows] = await pool.query('SELECT * FROM Tasks');
+    let query = 'SELECT * FROM Tasks';
+    const params = [];
+
+    if (project_id) {
+      query += ' WHERE project_id = ?';
+      params.push(project_id);
+    }
+
+    const [rows] = await pool.query(query, params);
     res.json(rows);
   } catch (err) {
     console.error('Error executing query:', err);
     res.status(500).json({ error: 'Error executing query' });
   }
 });
+
 
 app.get('/api/tasks-with-dependencies', async (req, res) => {
   try {
@@ -246,21 +256,6 @@ app.post('/api/notifications', async (req, res) => {
   }
 });
 
-/*
-app.get('/api/notifications', async (req, res) => {
-  const { user_id } = req.query;
-  try {
-    const [notifications] = await pool.query(
-      'SELECT * FROM Notifications WHERE user_id = ? ORDER BY created_at DESC',
-      [user_id]
-    );
-    res.status(200).json(notifications);
-  } catch (err) {
-    console.error('Error fetching notifications:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-*/
 app.get('/api/notifications', async (req, res) => {
   const { user_id } = req.query;
   try {
