@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import api from '../api/api';
 import CreateTaskModal from './CreateTaskModal';
+import ProjectAnalysis from './ProjectAnalysis';
 
 function Projects() {
   const [projects, setProjects] = useState([]);
@@ -86,7 +87,7 @@ function Projects() {
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Projects
+        <ProjectAnalysis />
       </Typography>
 
       {selectedProject ? (
@@ -123,7 +124,6 @@ function Projects() {
               </Paper>
             </Grid>
 
-            {/* Resources */}
             <Grid item xs={12} md={6}>
               <Paper elevation={1} sx={{ p: 2, height: '100%' }}>
                 <Typography variant="h6" gutterBottom>Resources</Typography>
@@ -154,7 +154,6 @@ function Projects() {
               </Paper>
             </Grid>
 
-            {/* Actions */}
             <Grid item xs={12}>
               <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
                 <Button variant="contained" color="primary" onClick={handleCreateTaskClick}>
