@@ -12,27 +12,36 @@ function Notifications() {
         Notifications
       </Typography>
       <List>
-        {notifications.map((notification) => (
-          <ListItem key={notification.id}>
-            <ListItemText
-              primary={notification.message}
-              secondary={`Type: ${notification.type}`}
-            />
-            {!notification.isRead && (
-              <Button onClick={() => markAsRead(notification.id)}>Mark as Read</Button>
-            )}
-            <IconButton
-              edge="end"
-              aria-label="delete"
-              onClick={() => deleteNotification(notification.id)}
-            >
-              <DeleteIcon />
-            </IconButton>
-          </ListItem>
-        ))}
+        {notifications.length > 0 ? (
+          notifications.map((notification) => (
+            <ListItem key={notification.id}>
+              <ListItemText
+                primary={notification.message}
+                secondary={`Type: ${notification.type} - ${
+                  notification.is_read ? 'Read' : 'Unread'
+                }`}
+              />
+              {!notification.is_read && (
+                <Button onClick={() => markAsRead(notification.id)} color="primary">
+                  Mark as Read
+                </Button>
+              )}
+              <IconButton
+                edge="end"
+                aria-label="delete"
+                onClick={() => deleteNotification(notification.id)}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </ListItem>
+          ))
+        ) : (
+          <Typography variant="body1">No notifications to display.</Typography>
+        )}
       </List>
     </div>
   );
 }
 
 export default Notifications;
+

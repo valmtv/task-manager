@@ -232,8 +232,81 @@ app.post('/api/tasks', async (req, res) => {
   }
 });
 
+app.post('/api/notifications', async (req, res) => {
+  const { user_id, message, type, is_read } = req.body;
+  try {
+    const [result] = await pool.query(
+      'INSERT INTO Notifications (user_id, message, type, is_read) VALUES (?, ?, ?, ?)',
+      [user_id, message, type, is_read || false]
+    );
+    res.status(201).json({ id: result.insertId, message: 'Notification added successfully' });
+  } catch (err) {
+    console.error('Error adding notification:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/*
+app.get('/api/notifications', async (req, res) => {
+  const { user_id } = req.query;
+  try {
+    const [notifications] = await pool.query(
+      'SELECT * FROM Notifications WHERE user_id = ? ORDER BY created_at DESC',
+      [user_id]
+    );
+    res.status(200).json(notifications);
+  } catch (err) {
+    console.error('Error fetching notifications:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+*/
+app.get('/api/notifications', async (req, res) => {
+  const { user_id } = req.query;
+  try {
+    const query = `
+      SELECT
+        n.id,
+        n.message,
+        n.type,
+        n.is_read,
+        n.created_at,
+        u.name AS user_name
+      FROM Notifications n
+      LEFT JOIN Users u ON n.user_id = u.id
+      WHERE n.user_id = ?
+      ORDER BY n.created_at DESC
+    `;
+    const [notifications] = await pool.query(query, [user_id]);
+    res.status(200).json(notifications);
+  } catch (err) {
+    console.error('Error fetching notifications:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 
+app.patch('/api/notifications/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query('UPDATE Notifications SET is_read = true WHERE id = ?', [id]);
+    res.status(200).json({ message: 'Notification marked as read' });
+  } catch (err) {
+    console.error('Error marking notification as read:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/notifications/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query('DELETE FROM Notifications WHERE id = ?', [id]);
+    res.status(200).json({ message: 'Notification deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting notification:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 
 app.listen(port, () => {

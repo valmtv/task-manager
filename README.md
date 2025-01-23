@@ -20,6 +20,7 @@ CREATE DATABASE task-manager
 exit
 mysql -u root -p task-manager < init.sql;
 ```
+init.sql can be deleted after the database is created.
 
 ### 3. Install Dependencies
 
@@ -37,7 +38,7 @@ npm run dev
 
 ### 4. Set up .env file
 
-Create a .env file in the backend directory and add the following:
+Create a .env file in the backend directory and add the following environment variables
 
 ```
 MYSQL_HOST='localhost'
@@ -46,3 +47,10 @@ MYSQL_PASSWORD='password'
 MYSQL_DATABASE='database name(eg. task-manager)'
 JWT_KEY='secure key'
 ```
+
+### 5. Versions Used 
+
+Node.js: v20.9.0
+mysql: Ver 9.0.1 for macos14.7 on x86_64 (Homebrew)
+Rest of the dependencies can be found in the package.json file in the respective directories.
+

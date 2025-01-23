@@ -90,11 +90,16 @@ function CreateTaskModal({ open, onClose, projectId }) {
           task_id: createdTask.id,
           dependent_task_id: dependentTask,
         });
-        addNotification('Task dependency created successfully', 'success');
+        addNotification(`You have got new task assigned: ${taskName}, is dependant on: ${dependentTask}`, 'Task Update', assignedTo);
+        addNotification(`You have created new task: ${taskName} for ${assignedTo}`, 'Task Update');
+        handleClose();
       }
+      else {
 
-      addNotification(`New task created: ${taskName}`, 'success');
-      handleClose();
+        addNotification(`You have got new task assigned: ${taskName}`, 'Task Update', assignedTo);
+        addNotification(`You have created new task: ${taskName} for ${assignedTo}`, 'Task Update');
+        handleClose();
+      }
     } catch (error) {
       console.error('Error creating task:', error);
       addNotification('Failed to create task', 'error');

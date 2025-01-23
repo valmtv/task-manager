@@ -4,14 +4,11 @@ import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { NotificationProvider } from './contexts/NotificationContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <BrowserRouter>
-    <NotificationProvider>
       <App />
-    </NotificationProvider>
   </BrowserRouter>,
 );
 

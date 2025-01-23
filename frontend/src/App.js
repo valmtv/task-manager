@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Route, Routes, Link, Navigate, useNavigate } from 'react-router-dom';
-
+import { NotificationProvider } from './contexts/NotificationContext';
 import {
   CssBaseline,
   Container,
@@ -55,7 +55,7 @@ function App() {
   };
 
   return (
-    <>
+    <NotificationProvider userId={user ? user.id : null}>
       <CssBaseline />
       <AppBar position="static">
         <Toolbar>
@@ -130,7 +130,7 @@ function App() {
         </Routes>
       </Container>
       <AuthModal open={authModalOpen.open} onClose={() => setAuthModalOpen({ open: false })} setUser={setUser} tab={authModalOpen.tab} />
-    </>
+    </NotificationProvider>
   );
 }
 
