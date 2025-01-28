@@ -18,7 +18,7 @@ function Tasks() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await api.get('/tasks-with-dependencies');
+        const response = await api.get('/tasks/tasks-with-dependencies');
         setTasks(response.data);
       } catch (error) {
         console.error('Error fetching tasks:', error);

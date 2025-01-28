@@ -87,7 +87,7 @@ function CreateTaskModal({ open, onClose, projectId }) {
       const createdTask = response.data;
 
       if (dependentTask) {
-        await api.post('/task-dependencies', {
+        await api.post('/tasks/task-dependencies', {
           task_id: createdTask.id,
           dependent_task_id: dependentTask,
         });
@@ -103,7 +103,7 @@ function CreateTaskModal({ open, onClose, projectId }) {
       }
     } catch (error) {
       console.error('Error creating task:', error);
-      addNotification('Failed to create task', 'error');
+      addNotification('Failed to create task', 'Task Update');
     }
   };
 
