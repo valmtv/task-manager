@@ -8,6 +8,8 @@ const handleError = require('../utils/error.handler');
  * /api/notifications:
  *   get:
  *     summary: Get user notifications
+ *     security:
+ *       - bearerAuth: []
  *     tags: [Notifications]
  *     parameters:
  *       - in: query
@@ -15,6 +17,9 @@ const handleError = require('../utils/error.handler');
  *         required: true
  *         schema:
  *           type: integer
+ *     responses:
+ *       200:
+ *         description: List of notifications for the user 
  */
 router.get('/', async (req, res) => {
   try {
@@ -30,6 +35,8 @@ router.get('/', async (req, res) => {
  * /api/notifications:
  *   post:
  *     summary: Create a new notification
+ *     security:
+ *       - bearerAuth: []
  *     tags: [Notifications]
  *     requestBody:
  *       required: true
@@ -51,6 +58,9 @@ router.get('/', async (req, res) => {
  *               is_read:
  *                 type: boolean
  *                 default: false
+ *     responses:
+ *       201:
+ *         description: Notification added successfully
  */
 router.post('/', async (req, res) => {
   try {
@@ -66,6 +76,8 @@ router.post('/', async (req, res) => {
  * /api/notifications/{id}:
  *   patch:
  *     summary: Mark notification as read
+ *     security:
+ *       - bearerAuth: []
  *     tags: [Notifications]
  *     parameters:
  *       - in: path
@@ -73,6 +85,9 @@ router.post('/', async (req, res) => {
  *         required: true
  *         schema:
  *           type: integer
+ *     responses:
+ *       200:
+ *         description: Notification marked as read
  */
 router.patch('/:id', async (req, res) => {
   try {
@@ -88,6 +103,8 @@ router.patch('/:id', async (req, res) => {
  * /api/notifications/{id}:
  *   delete:
  *     summary: Delete a notification
+ *     security:
+ *       - bearerAuth: []
  *     tags: [Notifications]
  *     parameters:
  *       - in: path
@@ -95,6 +112,9 @@ router.patch('/:id', async (req, res) => {
  *         required: true
  *         schema:
  *           type: integer
+ *     responses:
+ *       200:
+ *         description: Notification deleted successfully
  */
 router.delete('/:id', async (req, res) => {
   try {

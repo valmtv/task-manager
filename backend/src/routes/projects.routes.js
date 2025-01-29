@@ -28,6 +28,8 @@ router.get('/', async (req, res) => {
  * /api/projects:
  *   post:
  *     summary: Create a new project
+ *     security:
+ *       - bearerAuth: [] 
  *     tags: [Projects]
  *     requestBody:
  *       required: true
@@ -51,6 +53,9 @@ router.get('/', async (req, res) => {
  *                 format: date
  *               status:
  *                 type: string
+ *     responses:  
+ *       201:
+ *         description: Project created successfully
  */
 router.post('/', authMiddleware, async (req, res) => {
   try {
@@ -66,6 +71,8 @@ router.post('/', authMiddleware, async (req, res) => {
  * /api/projects/{projectId}/resources:
  *   get:
  *     summary: Get project resources
+ *     security:
+ *       - bearerAuth: []
  *     tags: [Projects]
  *     parameters:
  *       - in: path
@@ -73,6 +80,9 @@ router.post('/', authMiddleware, async (req, res) => {
  *         required: true
  *         schema:
  *           type: integer
+ *     responses:
+ *       200:
+ *         description: List of project resources
  */
 router.get('/:projectId/resources', async (req, res) => {
   try {
@@ -88,7 +98,12 @@ router.get('/:projectId/resources', async (req, res) => {
  * /api/projects/analysis:
  *   get:
  *     summary: Get project analysis
+ *     security:
+ *       - bearerAuth: []
  *     tags: [Projects]
+ *     responses:
+ *       200:
+ *         description: Projects analysis
  */
 router.get('/analysis', async (req, res) => {
   try {

@@ -26,6 +26,9 @@ const handleError = require('../utils/error.handler');
  *                 type: string
  *               password:
  *                 type: string
+ *     responses:
+ *       201:
+ *         description: User registered successfully
  */
 router.post('/register', async (req, res) => {
   try {
@@ -57,6 +60,9 @@ router.post('/register', async (req, res) => {
  *                 type: string
  *               password:
  *                 type: string
+ *     responses:
+ *       200:
+ *         description: User logged in successfully
  */
 router.post('/login', async (req, res) => {
   try {

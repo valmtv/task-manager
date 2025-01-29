@@ -8,6 +8,8 @@ const handleError = require('../utils/error.handler');
  * /api/tasks:
  *   get:
  *     summary: Get all tasks
+ *     security: 
+ *       - bearerAuth: []
  *     tags: [Tasks]
  *     parameters:
  *       - in: query
@@ -15,6 +17,9 @@ const handleError = require('../utils/error.handler');
  *         schema:
  *           type: integer
  *         description: Optional project ID to filter tasks
+ *     responses:
+ *       200:
+ *         description: Returns a list of tasks
  */
 router.get('/', async (req, res) => {
   try {
@@ -30,6 +35,8 @@ router.get('/', async (req, res) => {
  * /api/tasks:
  *   post:
  *     summary: Create a new task
+ *     security:
+ *       - bearerAuth: []
  *     tags: [Tasks]
  *     requestBody:
  *       required: true
@@ -56,6 +63,9 @@ router.get('/', async (req, res) => {
  *               due_date:
  *                 type: string
  *                 format: date
+ *     responses:
+ *       201:
+ *         description: Task created successfully
  */
 router.post('/', async (req, res) => {
   try {
@@ -71,6 +81,8 @@ router.post('/', async (req, res) => {
  * /api/tasks/update-status:
  *   post:
  *     summary: Update task status
+ *     security:
+ *       - bearerAuth: []
  *     tags: [Tasks]
  *     requestBody:
  *       required: true
@@ -86,6 +98,9 @@ router.post('/', async (req, res) => {
  *                 type: integer
  *               newStatus:
  *                 type: string
+ *     responses:
+ *       200:
+ *         description: Task status updated successfully
  */
 router.post('/update-status', async (req, res) => {
   try {
@@ -99,9 +114,11 @@ router.post('/update-status', async (req, res) => {
 
 /**
 * @swagger
-* /api/task-dependencies:
+* /api/tasks-with-dependencies:
 *  post:
-*    summary: Create a task dependency
+*    summary: Get all tasks with dependencies 
+*    security:
+*      - bearerAuth: []
 *    tags: [Tasks]
 *    requestBody:
 *      required: true
@@ -117,6 +134,9 @@ router.post('/update-status', async (req, res) => {
 *                type: integer
 *              dependent_task_id:
 *                type: integer
+*    responses:
+*      201:
+*        description: Tasks received successfully 
 */
 router.get('/tasks-with-dependencies', async (req, res) => {
   try {
@@ -132,7 +152,12 @@ router.get('/tasks-with-dependencies', async (req, res) => {
  * /api/task-dependencies:
  *   post:
  *     summary: Create a task dependency
+ *     security:
+ *       - bearerAuth: []
  *     tags: [Tasks]
+ *     responses:
+ *       201:
+ *         description: Task dependency created successfully
  */
 router.post('/task-dependencies', async (req, res) => {
   try {

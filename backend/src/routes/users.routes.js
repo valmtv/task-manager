@@ -9,6 +9,11 @@ const handleError = require('../utils/error.handler');
  *   get:
  *     summary: Get all team members
  *     tags: [Users]
+ *   security:  
+ *     - bearerAuth: []
+ *   responses:
+ *     200:
+ *       description: List of team members
  */
 router.get('/team-members', async (req, res) => {
   try {
