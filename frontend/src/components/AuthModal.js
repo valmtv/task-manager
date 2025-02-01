@@ -15,7 +15,7 @@ import { jwtDecode } from 'jwt-decode';
 
 function AuthModal({ open, onClose, setUser, tab }) {
   const [tabValue, setTabValue] = useState(tab || 0);
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
 
@@ -25,7 +25,7 @@ function AuthModal({ open, onClose, setUser, tab }) {
 
   const handleLogin = async () => {
     try {
-      const response = await api.post('/login', { email, password });
+      const response = await api.post('/login', { identifier, password });
       setAuthToken(response.data.token);
       const decoded = jwtDecode(response.data.token);
       setUser(decoded);
@@ -37,7 +37,7 @@ function AuthModal({ open, onClose, setUser, tab }) {
 
   const handleRegister = async () => {
     try {
-      const response = await api.post('/register', { name, email, password });
+      const response = await api.post('/register', { name, email: identifier, password });
       setAuthToken(response.data.token);
       const decoded = jwtDecode(response.data.token);
       setUser(decoded);
@@ -60,9 +60,9 @@ function AuthModal({ open, onClose, setUser, tab }) {
           <Box>
             <TextField
               fullWidth
-              label="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              label="Email or Username"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               margin="normal"
             />
             <TextField
@@ -86,8 +86,8 @@ function AuthModal({ open, onClose, setUser, tab }) {
             <TextField
               fullWidth
               label="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               margin="normal"
             />
             <TextField

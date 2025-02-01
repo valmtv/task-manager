@@ -24,16 +24,19 @@ class AuthService {
     };
   }
 
-  async loginUser(email, password) {
-    const [users] = await pool.query('SELECT * FROM Users WHERE email = ?', [email]);
+  async loginUser(identifier, password) {
+    let query = 'SELECT * FROM Users WHERE email = ? OR name = ?';
+    const [users] = await pool.query(query, [identifier, identifier]);
+
     if (users.length === 0) {
-      throw new Error('Invalid email or password');
+      throw new Error('Invalid username/email or password');
     }
 
     const user = users[0];
     const isPasswordValid = await bcrypt.compare(password, user.password);
+
     if (!isPasswordValid) {
-      throw new Error('Invalid email or password');
+      throw new Error('Invalid username/email or password');
     }
 
     return {

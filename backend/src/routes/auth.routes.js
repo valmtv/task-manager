@@ -53,11 +53,12 @@ router.post('/register', async (req, res) => {
  *           schema:
  *             type: object
  *             required:
- *               - email
+ *               - identifier 
  *               - password
  *             properties:
- *               email:
+ *               identifier:
  *                 type: string
+ *                 description: User email or username
  *               password:
  *                 type: string
  *     responses:
@@ -66,8 +67,8 @@ router.post('/register', async (req, res) => {
  */
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const result = await authService.loginUser(email, password);
+    const { identifier, password } = req.body;
+    const result = await authService.loginUser(identifier, password);
     res.json(result);
   } catch (err) {
     handleError(res, err);
