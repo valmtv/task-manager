@@ -51,6 +51,8 @@ JWT_KEY='secure key'
 ### 5. Versions Used 
 
 Node.js: v20.9.0
+<br>
 mysql: Ver 9.0.1 for macos14.7 on x86_64 (Homebrew)
+<br>
 Rest of the dependencies can be found in the package.json file in the respective directories.
 
