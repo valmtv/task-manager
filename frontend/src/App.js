@@ -8,25 +8,21 @@ import {
   Toolbar,
   Typography,
   Button,
-  Menu,
-  MenuItem,
-  Avatar,
-  Divider,
 } from '@mui/material';
-import PersonIcon from '@mui/icons-material/Person';
 import Projects from './components/Projects';
 import Tasks from './components/Tasks';
 import Notifications from './components/Notifications';
 import AuthModal from './components/AuthModal';
 import ProtectedRoute from './components/ProtectedRoute';
 import Welcome from './components/Welcome';
+import Profile from './components/Profile';
 import { getAuthToken } from './api/api';
 import { jwtDecode } from 'jwt-decode';
+import AppBarUserMenu from './components/AppBarUserMenu';
 
 function App() {
   const [authModalOpen, setAuthModalOpen] = useState({ open: false, tab: 0 });
   const [user, setUser] = useState(null);
-  const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,18 +35,9 @@ function App() {
 
 
 
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
   const handleLogout = async () => {
     localStorage.removeItem('token');
     await setUser(null);
-    handleMenuClose();
     navigate('/');
   };
 
@@ -78,28 +65,7 @@ function App() {
               <Button color="inherit" component={Link} to="/notifications">
                 Notifications
               </Button>
-              <div>
-                <Button
-                  color="inherit"
-                  onClick={handleMenuOpen}
-                  startIcon={<Avatar><PersonIcon /></Avatar>}
-                >
-                  {user.name || 'User'}
-                </Button>
-                <Menu
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={handleMenuClose}
-                >
-                  <MenuItem disabled>
-                    <Typography variant="body2" color="textSecondary">
-                      {user.role}
-                    </Typography>
-                  </MenuItem>
-                  <Divider />
-                  <MenuItem onClick={handleLogout}>Logout</MenuItem>
-                </Menu>
-              </div>
+              <AppBarUserMenu user={user} handleLogout={handleLogout} navigate={navigate} />
             </>
           ) : null}
         </Toolbar>
@@ -127,9 +93,17 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile user={user} />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </Container>
-      <AuthModal 
+      <AuthModal
         open={authModalOpen.open}
         onClose={() => setAuthModalOpen({ open: false, tab: 0 })}
         setUser={setUser}
