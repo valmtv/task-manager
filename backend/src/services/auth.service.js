@@ -15,9 +15,10 @@ class AuthService {
     return {
       id: result.insertId,
       name,
+      email,
       role,
       token: jwt.sign(
-        { id: result.insertId, name, role },
+        { id: result.insertId, name, email, role },
         process.env.JWT_KEY,
         { expiresIn: '1h' }
       )
@@ -41,7 +42,7 @@ class AuthService {
 
     return {
       token: jwt.sign(
-        { id: user.id, name: user.name, role: user.role },
+        { id: user.id, name: user.name, email: user.email, role: user.role },
         process.env.JWT_KEY,
         { expiresIn: '1h' }
       )
