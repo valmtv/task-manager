@@ -9,7 +9,11 @@ import {
   Tabs,
   Tab,
   Box,
+  IconButton,
+  InputAdornment,
 } from '@mui/material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import api, { setAuthToken } from '../api/api';
 import { jwtDecode } from 'jwt-decode';
 
@@ -18,6 +22,7 @@ function AuthModal({ open, onClose, setUser, tab }) {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   // Handle tab change when the modal is opened
   useEffect(() => {
@@ -25,6 +30,10 @@ function AuthModal({ open, onClose, setUser, tab }) {
       setTabValue(tab || 0);
     }
   }, [open, tab]);
+
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -75,10 +84,19 @@ function AuthModal({ open, onClose, setUser, tab }) {
             <TextField
               fullWidth
               label="Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               margin="normal"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={toggleShowPassword} edge="end">
+                      {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}              
             />
           </Box>
         ) : (
@@ -100,10 +118,19 @@ function AuthModal({ open, onClose, setUser, tab }) {
             <TextField
               fullWidth
               label="Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               margin="normal"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={toggleShowPassword} edge="end">
+                      {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
           </Box>
         )}
