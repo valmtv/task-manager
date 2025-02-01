@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Button, Container, Paper, Grid } from '@mui/material';
+import { Box, Typography, Button, Container, Paper, Grid2 } from '@mui/material';
 
 function Welcome({ setAuthModalOpen }) {
   return (
@@ -25,8 +25,8 @@ function Welcome({ setAuthModalOpen }) {
             Task Manager is a powerful tool to help you manage your projects, assign tasks, and track progress. 
             Whether you're working solo or with a team, Task Manager has everything you need to stay organized.
           </Typography>
-          <Grid container spacing={2} justifyContent="center">
-            <Grid item>
+          <Grid2 container spacing={2} justifyContent="center">
+            <Grid2 >
               <Button
                 variant="contained"
                 color="primary"
@@ -35,8 +35,8 @@ function Welcome({ setAuthModalOpen }) {
               >
                 Login
               </Button>
-            </Grid>
-            <Grid item>
+            </Grid2>
+            <Grid2 >
               <Button
                 variant="outlined"
                 color="primary"
@@ -45,8 +45,8 @@ function Welcome({ setAuthModalOpen }) {
               >
                 Sign Up
               </Button>
-            </Grid>
-          </Grid>
+            </Grid2>
+          </Grid2>
         </Paper>
       </Box>
     </Container>

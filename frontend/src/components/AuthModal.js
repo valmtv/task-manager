@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -18,6 +18,13 @@ function AuthModal({ open, onClose, setUser, tab }) {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+
+  // Handle tab change when the modal is opened
+  useEffect(() => {
+    if (open) {
+      setTabValue(tab || 0);
+    }
+  }, [open, tab]);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -60,7 +67,7 @@ function AuthModal({ open, onClose, setUser, tab }) {
           <Box>
             <TextField
               fullWidth
-              label="Email or Username"
+              label="Username or Email"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               margin="normal"

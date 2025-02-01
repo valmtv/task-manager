@@ -24,7 +24,7 @@ import { getAuthToken } from './api/api';
 import { jwtDecode } from 'jwt-decode';
 
 function App() {
-  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState({ open: false, tab: 0 });
   const [user, setUser] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
@@ -129,7 +129,12 @@ function App() {
           />
         </Routes>
       </Container>
-      <AuthModal open={authModalOpen.open} onClose={() => setAuthModalOpen({ open: false })} setUser={setUser} tab={authModalOpen.tab} />
+      <AuthModal 
+        open={authModalOpen.open}
+        onClose={() => setAuthModalOpen({ open: false, tab: 0 })}
+        setUser={setUser}
+        tab={authModalOpen.tab}
+      />
     </NotificationProvider>
   );
 }
