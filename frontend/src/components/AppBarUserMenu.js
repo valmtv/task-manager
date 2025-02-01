@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   Button,
   Menu,
@@ -11,23 +11,27 @@ import PersonIcon from '@mui/icons-material/Person';
 
 function AppBarUserMenu({ user, handleLogout, navigate }) {
   const [anchorEl, setAnchorEl] = useState(null);
-  const menuRef = useRef(null);
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
   const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
+    const activeElement = document.activeElement;
+    if (activeElement && activeElement.blur) {
+      activeElement.blur();
+    }
 
+    setTimeout(() => {
+      setAnchorEl(null);
+    }, 100);
+  };
 
   return (
     <div
       onMouseEnter={handleMenuOpen}
       onMouseLeave={handleMenuClose}
       style={{ display: 'inline-block', cursor: 'pointer' }}
-      ref={menuRef}
     >
       <Button
         color="inherit"
@@ -41,7 +45,12 @@ function AppBarUserMenu({ user, handleLogout, navigate }) {
         onClose={handleMenuClose}
         onMouseLeave={handleMenuClose}
         PaperProps={{
-          onMouseLeave: handleMenuClose, 
+          onMouseLeave: handleMenuClose,
+        }}
+        TransitionProps={{
+          onExited: () => {
+            setAnchorEl(null);
+          },
         }}
       >
         <MenuItem disabled>
