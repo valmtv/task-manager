@@ -53,7 +53,7 @@ router.post('/register', async (req, res) => {
  *           schema:
  *             type: object
  *             required:
- *               - identifier 
+ *               - identifier
  *               - password
  *             properties:
  *               identifier:
@@ -64,6 +64,14 @@ router.post('/register', async (req, res) => {
  *     responses:
  *       200:
  *         description: User logged in successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                   description: JWT token containing user details (id, name, email, role, phone_number)
  */
 router.post('/login', async (req, res) => {
   try {
@@ -74,5 +82,6 @@ router.post('/login', async (req, res) => {
     handleError(res, err);
   }
 });
+
 
 module.exports = router;
