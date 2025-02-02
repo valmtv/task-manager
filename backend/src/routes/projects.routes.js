@@ -108,9 +108,10 @@ router.get('/:projectId/resources', async (req, res) => {
 router.get('/analysis', async (req, res) => {
   try {
     const analysis = await projectService.getProjectAnalysis();
-    res.json(analysis);
-  } catch (err) {
-    handleError(res, err);
+    res.status(200).json(analysis);
+  } catch (error) {
+    console.error('Error fetching project analysis:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
