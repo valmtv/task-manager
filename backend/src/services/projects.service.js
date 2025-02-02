@@ -1,11 +1,20 @@
 const pool = require('../config/database');
 
 class ProjectService {
+  /**
+   * Get all projects
+   * @returns {Array} - List of projects
+   */
   async getAllProjects() {
     const [rows] = await pool.query('SELECT * FROM Projects');
     return rows;
   }
 
+  /**
+   * Create a new project
+   * @param {Object} projectData - Project details
+   * @returns {Object} - Project ID
+   */
   async createProject(projectData) {
     const { name, description, start_date, end_date, status } = projectData;
     const [result] = await pool.query(
@@ -15,6 +24,12 @@ class ProjectService {
     return { id: result.insertId };
   }
 
+
+  /**
+   * Get project's resources needed
+   * @param {number} projectId - Project ID
+   * @returns {Object} - Project resources 
+   */
   async getProjectResources(projectId) {
     const [resources] = await pool.query(
       `SELECT r.id, r.name, r.type, r.quantity, r.cost
@@ -26,6 +41,10 @@ class ProjectService {
     return resources;
   }
 
+  /**
+   * Get all project details
+   * @returns {Array} - List of project details
+   */
   async getProjectAnalysis() {
     const [rows] = await pool.query(`
       WITH
