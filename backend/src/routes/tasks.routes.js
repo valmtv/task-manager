@@ -2,13 +2,14 @@ const express = require('express');
 const router = express.Router();
 const taskService = require('../services/tasks.service');
 const handleError = require('../utils/error.handler');
+const authMiddleware = require('../middleware/auth.middleware');
 
 /**
  * @swagger
  * /api/tasks:
  *   get:
  *     summary: Get all tasks
- *     security: 
+ *     security:
  *       - bearerAuth: []
  *     tags: [Tasks]
  *     parameters:
@@ -19,7 +20,7 @@ const handleError = require('../utils/error.handler');
  *         description: Optional project ID to filter tasks
  *     responses:
  *       200:
- *         description: Returns a list of tasks
+ *         description: List of tasks
  */
 router.get('/', async (req, res) => {
   try {
@@ -44,33 +45,40 @@ router.get('/', async (req, res) => {
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - project_id
- *               - name
- *             properties:
- *               project_id:
- *                 type: integer
- *               name:
- *                 type: string
- *               description:
- *                 type: string
- *               assigned_to:
- *                 type: integer
- *               status:
- *                 type: string
- *               priority:
- *                 type: string
- *               due_date:
- *                 type: string
- *                 format: date
  *     responses:
  *       201:
  *         description: Task created successfully
  */
 router.post('/', async (req, res) => {
   try {
-    const result = await taskService.createTask(req.body);
-    res.status(201).json({ ...result, message: 'Task created successfully' });
+    const { project_id, name, description, assigned_to, priority, due_date, dependent_task_id, tags } = req.body;
+
+    const createdTask = await taskService.createTask({
+      project_id,
+      name,
+      description,
+      priority,
+      due_date,
+    });
+
+    const taskId = createdTask.id;
+
+    // Assign users to the task
+    if (assigned_to && assigned_to.length > 0) {
+      await taskService.assignUsersToTask(taskId, Array.isArray(assigned_to) ? assigned_to : [assigned_to]);
+    }
+
+    // Add task dependencies
+    if (dependent_task_id) {
+      await taskService.addTaskDependency(taskId, dependent_task_id);
+    }
+
+    // Add tags to the task
+    if (tags && tags.length > 0) {
+      await taskService.addTaskTags(taskId, Array.isArray(tags) ? tags : [tags]);
+    }
+
+    res.status(201).json({ ...createdTask, message: 'Task created successfully' });
   } catch (err) {
     handleError(res, err);
   }
@@ -113,31 +121,17 @@ router.post('/update-status', async (req, res) => {
 });
 
 /**
-* @swagger
-* /api/tasks-with-dependencies:
-*  post:
-*    summary: Get all tasks with dependencies 
-*    security:
-*      - bearerAuth: []
-*    tags: [Tasks]
-*    requestBody:
-*      required: true
-*      content:
-*        application/json:
-*          schema:
-*            type: object
-*            required:
-*              - task_id
-*              - dependent_task_id
-*            properties:
-*              task_id:
-*                type: integer
-*              dependent_task_id:
-*                type: integer
-*    responses:
-*      201:
-*        description: Tasks received successfully 
-*/
+ * @swagger
+ * /api/tasks/tasks-with-dependencies:
+ *   get:
+ *     summary: Get all tasks with dependencies
+ *     security:
+ *       - bearerAuth: []
+ *     tags: [Tasks]
+ *     responses:
+ *       200:
+ *         description: List of tasks with dependencies
+ */
 router.get('/tasks-with-dependencies', async (req, res) => {
   try {
     const tasks = await taskService.getTasksWithDependencies();
@@ -155,6 +149,20 @@ router.get('/tasks-with-dependencies', async (req, res) => {
  *     security:
  *       - bearerAuth: []
  *     tags: [Tasks]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - task_id
+ *               - dependent_task_id
+ *             properties:
+ *               task_id:
+ *                 type: integer
+ *               dependent_task_id:
+ *                 type: integer
  *     responses:
  *       201:
  *         description: Task dependency created successfully
@@ -164,6 +172,37 @@ router.post('/task-dependencies', async (req, res) => {
     const { task_id, dependent_task_id } = req.body;
     await taskService.createTaskDependency(task_id, dependent_task_id);
     res.status(201).json({ message: 'Task dependency created successfully' });
+  } catch (err) {
+    handleError(res, err);
+  }
+});
+
+/**
+ * @swagger
+ * /api/tasks/add-tag:
+ *   post:
+ *     summary: Add a tag to a task
+ *     security:
+ *       - bearerAuth: []
+ *     tags: [Tasks]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *         schema:
+ *           type: object
+ *           required:
+ *             - task_id
+ *             - tag_name
+ *     responses:
+ *       200:
+ *         description: Tag added successfully
+ */
+router.post('/add-tag', async (req, res) => {
+  try {
+    const { task_id, tag_name } = req.body;
+    await taskService.addTaskTag(task_id, tag_name);
+    res.json({ message: 'Tag added successfully' });
   } catch (err) {
     handleError(res, err);
   }

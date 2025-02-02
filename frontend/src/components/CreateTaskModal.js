@@ -10,6 +10,9 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Autocomplete,
+  Chip,
+  Box,
 } from '@mui/material';
 import api from '../api/api';
 import NotificationContext from '../contexts/NotificationContext';
@@ -17,11 +20,11 @@ import NotificationContext from '../contexts/NotificationContext';
 function CreateTaskModal({ open, onClose, projectId }) {
   const [taskName, setTaskName] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
-  const [assignedTo, setAssignedTo] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [priority, setPriority] = useState('Medium');
   const [dependentTask, setDependentTask] = useState('');
-  const [errors, setErrors] = useState({});
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [tags, setTags] = useState([]);
   const [users, setUsers] = useState([]);
   const [tasks, setTasks] = useState([]);
   const { addNotification } = useContext(NotificationContext);
@@ -46,7 +49,6 @@ function CreateTaskModal({ open, onClose, projectId }) {
     const fetchTasks = async () => {
       try {
         const response = await api.get(`/tasks?project_id=${projectId}`);
-
         setTasks(response.data);
       } catch (error) {
         console.error('Error fetching tasks:', error);
@@ -60,66 +62,50 @@ function CreateTaskModal({ open, onClose, projectId }) {
     }
   }, [open, projectId, addNotification]);
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!taskName.trim()) newErrors.taskName = 'Task name is required';
-    if (!projectId) newErrors.projectId = 'Project ID is required';
+  const handleUserChange = (event, value) => {
+    setSelectedUsers(value);
+  };
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handleTagAddition = (event) => {
+    if (event.key === 'Enter' && event.target.value.trim() !== '') {
+      const newTag = event.target.value.trim();
+      if (!tags.includes(newTag)) {
+        setTags([...tags, newTag]);
+      }
+      event.target.value = '';
+    }
+  };
+
+  const handleTagRemove = (tagToRemove) => {
+    setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
   const handleCreateTask = async () => {
-    if (!validateForm()) return;
-
     try {
       const newTask = {
         project_id: projectId,
         name: taskName,
         description: taskDescription || null,
-        assigned_to: assignedTo || null,
-        status: 'Pending',
+        assigned_to: selectedUsers.map((user) => user.id),
         priority: priority,
         due_date: dueDate || null,
+        dependent_task_id: dependentTask || null,
+        tags: tags,
       };
 
       const response = await api.post('/tasks', newTask);
       const createdTask = response.data;
 
-      if (dependentTask) {
-        await api.post('/tasks/task-dependencies', {
-          task_id: createdTask.id,
-          dependent_task_id: dependentTask,
-        });
-        addNotification(`You have got new task assigned: ${taskName}, is dependant on: ${dependentTask}`, 'Task Update', assignedTo);
-        addNotification(`You have created new task: ${taskName} for ${assignedTo}`, 'Task Update');
-        handleClose();
-      }
-      else {
-
-        addNotification(`You have got new task assigned: ${taskName}`, 'Task Update', assignedTo);
-        addNotification(`You have created new task: ${taskName} for ${assignedTo}`, 'Task Update');
-        handleClose();
-      }
+      addNotification(`You have created new task: ${createdTask.name}`, 'Task Update');
+      onClose();
     } catch (error) {
       console.error('Error creating task:', error);
-      addNotification('Failed to create task', 'Task Update');
+      addNotification('Failed to create task', 'error');
     }
   };
 
-  const handleClose = () => {
-    setTaskName('');
-    setTaskDescription('');
-    setAssignedTo('');
-    setDueDate('');
-    setPriority('Medium');
-    setDependentTask('');
-    setErrors({});
-    onClose();
-  };
-
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Create New Task</DialogTitle>
       <DialogContent>
         <TextField
@@ -128,11 +114,8 @@ function CreateTaskModal({ open, onClose, projectId }) {
           value={taskName}
           onChange={(e) => setTaskName(e.target.value)}
           margin="normal"
-          error={!!errors.taskName}
-          helperText={errors.taskName}
           required
         />
-
         <TextField
           fullWidth
           label="Task Description"
@@ -142,7 +125,6 @@ function CreateTaskModal({ open, onClose, projectId }) {
           multiline
           rows={4}
         />
-
         <FormControl fullWidth margin="normal">
           <InputLabel id="priority-label">Priority</InputLabel>
           <Select
@@ -156,7 +138,6 @@ function CreateTaskModal({ open, onClose, projectId }) {
             <MenuItem value="High">High</MenuItem>
           </Select>
         </FormControl>
-
         <TextField
           fullWidth
           label="Due Date"
@@ -171,26 +152,31 @@ function CreateTaskModal({ open, onClose, projectId }) {
             min: getTomorrowDate(),
           }}
         />
-
-        <FormControl fullWidth margin="normal">
-          <InputLabel id="assigned-to-label">Assigned To</InputLabel>
-          <Select
-            labelId="assigned-to-label"
-            value={assignedTo}
-            label="Assigned To"
-            onChange={(e) => setAssignedTo(e.target.value)}
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            {users.map((user) => (
-              <MenuItem key={user.id} value={user.id}>
-                {user.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
+        <Autocomplete
+  multiple
+  options={users}
+  getOptionLabel={(user) => user.name}
+  value={selectedUsers}
+  onChange={handleUserChange}
+  renderInput={(params) => (
+    <TextField {...params} label="Assigned To" margin="normal" />
+  )}
+  renderTags={(value, getTagProps) =>
+    value.map((user, index) => {
+      const { key, ...rest } = getTagProps({ index });
+      return (
+        <Chip
+          key={key}
+          label={user.name}
+          {...rest}
+          onDelete={() => {
+            setSelectedUsers(selectedUsers.filter((u) => u.id !== user.id));
+          }}
+        />
+      );
+    })
+  }
+/>
         <FormControl fullWidth margin="normal">
           <InputLabel id="dependent-task-label">Dependent Task</InputLabel>
           <Select
@@ -209,10 +195,27 @@ function CreateTaskModal({ open, onClose, projectId }) {
             ))}
           </Select>
         </FormControl>
+        {/* Tags input */}
+        <Box display="flex" alignItems="center" flexWrap="wrap" marginY={2}>
+  {tags.map((tag, index) => (
+    <Chip
+      key={index}
+      label={tag}
+      onDelete={() => handleTagRemove(tag)}
+      style={{ marginRight: 5, marginBottom: 5 }}
+    />
+  ))}
+  <TextField
+    fullWidth
+    label="Add Tag"
+    onKeyDown={handleTagAddition}
+    margin="normal"
+    placeholder="Press Enter to add a tag"
+  />
+</Box>
       </DialogContent>
-
       <DialogActions>
-        <Button onClick={handleClose} color="secondary">
+        <Button onClick={onClose} color="secondary">
           Cancel
         </Button>
         <Button onClick={handleCreateTask} color="primary">
