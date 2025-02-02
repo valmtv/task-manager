@@ -117,8 +117,8 @@ CREATE TABLE Notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     message TEXT NOT NULL,
-    type ENUM('Deadline', 'Task Update', 'Overdue') NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    type VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_read BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (user_id) REFERENCES Users(id)
 );
