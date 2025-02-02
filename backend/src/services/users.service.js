@@ -1,9 +1,19 @@
 const pool = require('../config/database');
 
 class UsersService {
+  /**
+   * Get all users with the role of Team Member
+   * @returns {Array} - List of team members
+   */
   async getTeamMembers() {
     const [users] = await pool.query(
-      'SELECT id, name, email, role FROM Users WHERE role = "Team Member" ORDER BY name'
+      `
+      SELECT u.id, u.name, u.email, r.name AS role
+      FROM Users u
+      JOIN Roles r ON u.role_id = r.id
+      WHERE r.name = 'Team Member'
+      ORDER BY u.name
+      `
     );
     return users;
   }
