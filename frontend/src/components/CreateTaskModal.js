@@ -93,10 +93,9 @@ function CreateTaskModal({ open, onClose, projectId }) {
         tags: tags,
       };
 
-      const response = await api.post('/tasks', newTask);
-      const createdTask = response.data;
+      await api.post('/tasks', newTask);
 
-      addNotification(`You have created new task: ${createdTask.name}`, 'Task Update');
+      addNotification(`You have created new task: ${newTask.name}`, 'Task Update');
       onClose();
     } catch (error) {
       console.error('Error creating task:', error);
@@ -153,30 +152,30 @@ function CreateTaskModal({ open, onClose, projectId }) {
           }}
         />
         <Autocomplete
-  multiple
-  options={users}
-  getOptionLabel={(user) => user.name}
-  value={selectedUsers}
-  onChange={handleUserChange}
-  renderInput={(params) => (
-    <TextField {...params} label="Assigned To" margin="normal" />
-  )}
-  renderTags={(value, getTagProps) =>
-    value.map((user, index) => {
-      const { key, ...rest } = getTagProps({ index });
-      return (
-        <Chip
-          key={key}
-          label={user.name}
-          {...rest}
-          onDelete={() => {
-            setSelectedUsers(selectedUsers.filter((u) => u.id !== user.id));
-          }}
+          multiple
+          options={users}
+          getOptionLabel={(user) => user.name}
+          value={selectedUsers}
+          onChange={handleUserChange}
+          renderInput={(params) => (
+            <TextField {...params} label="Assigned To" margin="normal" />
+          )}
+          renderTags={(value, getTagProps) =>
+            value.map((user, index) => {
+              const { key, ...rest } = getTagProps({ index });
+              return (
+                <Chip
+                  key={key}
+                  label={user.name}
+                  {...rest}
+                  onDelete={() => {
+                    setSelectedUsers(selectedUsers.filter((u) => u.id !== user.id));
+                  }}
+                />
+              );
+            })
+          }
         />
-      );
-    })
-  }
-/>
         <FormControl fullWidth margin="normal">
           <InputLabel id="dependent-task-label">Dependent Task</InputLabel>
           <Select
@@ -195,24 +194,23 @@ function CreateTaskModal({ open, onClose, projectId }) {
             ))}
           </Select>
         </FormControl>
-        {/* Tags input */}
         <Box display="flex" alignItems="center" flexWrap="wrap" marginY={2}>
-  {tags.map((tag, index) => (
-    <Chip
-      key={index}
-      label={tag}
-      onDelete={() => handleTagRemove(tag)}
-      style={{ marginRight: 5, marginBottom: 5 }}
-    />
-  ))}
-  <TextField
-    fullWidth
-    label="Add Tag"
-    onKeyDown={handleTagAddition}
-    margin="normal"
-    placeholder="Press Enter to add a tag"
-  />
-</Box>
+          {tags.map((tag, index) => (
+            <Chip
+              key={index}
+              label={tag}
+              onDelete={() => handleTagRemove(tag)}
+              style={{ marginRight: 5, marginBottom: 5 }}
+            />
+          ))}
+          <TextField
+            fullWidth
+            label="Add Tag"
+            onKeyDown={handleTagAddition}
+            margin="normal"
+            placeholder="Press Enter to add a tag"
+          />
+        </Box>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="secondary">
