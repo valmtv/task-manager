@@ -1,10 +1,45 @@
+-- Create the Roles table
+CREATE TABLE Roles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE
+);
+
+-- Insert initial roles
+INSERT INTO Roles (name) VALUES ('Admin'), ('Manager'), ('Team Member');
+
 -- Create the Users table
 CREATE TABLE Users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
-    role ENUM('Admin', 'Manager', 'Team Member') NOT NULL,
-    password VARCHAR(255) NOT NULL
+    password VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(20) DEFAULT NULL,
+    role_id INT NOT NULL,
+    profile_picture_id INT DEFAULT NULL,
+    FOREIGN KEY (role_id) REFERENCES Roles(id) ON DELETE CASCADE
+);
+
+-- Create the ProfilePictures table
+CREATE TABLE ProfilePictures (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT DEFAULT NULL, -- NULL for default avatars
+    name VARCHAR(255) NOT NULL,
+    image_data LONGBLOB NOT NULL, -- Binary image data
+    is_default BOOLEAN DEFAULT FALSE, -- TRUE for default avatars, FALSE for user-uploaded images
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
+);
+
+-- Add foreign key to Users table for profile_picture_id
+ALTER TABLE Users
+ADD FOREIGN KEY (profile_picture_id) REFERENCES ProfilePictures(id) ON DELETE SET NULL;
+
+-- Create the Confirmations table
+CREATE TABLE Confirmations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    type ENUM('phone', 'email') NOT NULL,
+    confirmed_at DATETIME DEFAULT NULL,
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
 );
 
 -- Create the Projects table
@@ -23,12 +58,19 @@ CREATE TABLE Tasks (
     project_id INT NOT NULL,
     name VARCHAR(255) NOT NULL,
     description TEXT,
-    assigned_to INT,
     status ENUM('Pending', 'In Progress', 'Completed') DEFAULT 'Pending',
     priority ENUM('Low', 'Medium', 'High') DEFAULT 'Medium',
     due_date DATE,
-    FOREIGN KEY (project_id) REFERENCES Projects(id),
-    FOREIGN KEY (assigned_to) REFERENCES Users(id)
+    FOREIGN KEY (project_id) REFERENCES Projects(id)
+);
+
+-- Create the TaskAssignments table
+CREATE TABLE TaskAssignments (
+    task_id INT NOT NULL,
+    user_id INT NOT NULL,
+    PRIMARY KEY (task_id, user_id),
+    FOREIGN KEY (task_id) REFERENCES Tasks(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
 );
 
 -- Create the TimeLogs table
@@ -57,8 +99,8 @@ CREATE TABLE ProjectResources (
     project_id INT NOT NULL,
     resource_id INT NOT NULL,
     PRIMARY KEY (project_id, resource_id),
-    CONSTRAINT fk_project_resources_project FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
-    CONSTRAINT fk_project_resources_resource FOREIGN KEY (resource_id) REFERENCES resources(id) ON DELETE CASCADE
+    CONSTRAINT fk_project_resources_project FOREIGN KEY (project_id) REFERENCES Projects(id) ON DELETE CASCADE,
+    CONSTRAINT fk_project_resources_resource FOREIGN KEY (resource_id) REFERENCES Resources(id) ON DELETE CASCADE
 );
 
 -- Create the TaskDependencies table
@@ -75,10 +117,51 @@ CREATE TABLE Notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     message TEXT NOT NULL,
-    type ENUM('Deadline', 'Task Update', 'Overdue') NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    type VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_read BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (user_id) REFERENCES Users(id)
+);
+
+-- Create the PasswordResets table
+CREATE TABLE PasswordResets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token VARCHAR(255) NOT NULL,
+    expires_at DATETIME NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
+);
+
+-- Create the Tags, TaskTags, and ProjectTags tables
+CREATE TABLE Tags (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE
+);
+
+CREATE TABLE TaskTags (
+    task_id INT NOT NULL,
+    tag_id INT NOT NULL,
+    PRIMARY KEY (task_id, tag_id),
+    FOREIGN KEY (task_id) REFERENCES Tasks(id) ON DELETE CASCADE,
+    FOREIGN KEY (tag_id) REFERENCES Tags(id) ON DELETE CASCADE
+);
+
+CREATE TABLE ProjectTags (
+    project_id INT NOT NULL,
+    tag_id INT NOT NULL,
+    PRIMARY KEY (project_id, tag_id),
+    FOREIGN KEY (project_id) REFERENCES Projects(id) ON DELETE CASCADE,
+    FOREIGN KEY (tag_id) REFERENCES Tags(id) ON DELETE CASCADE
+);
+
+CREATE TABLE VerificationCodes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    code VARCHAR(6) NOT NULL,
+    type ENUM('email_verification', 'password_reset') NOT NULL,
+    expires_at DATETIME NOT NULL,
+    used BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
 );
 
 -- Insert initial data into Projects table
@@ -104,4 +187,3 @@ INSERT INTO ProjectResources (project_id, resource_id) VALUES
 (2, 3),  -- Mobile App Development project uses 5 design software licenses
 (3, 4),  -- Database Migration project uses 5000 marketing budget
 (4, 5);  -- Marketing Campaign project uses 3 development tools
-
