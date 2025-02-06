@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Container,
   Typography,
@@ -6,19 +6,47 @@ import {
   Box,
   Button,
   TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
   Divider,
-  Avatar,
 } from '@mui/material';
-import PersonIcon from '@mui/icons-material/Person';
+import api from '../api/api';
 
 function Profile({ user }) {
+  const [openModal, setOpenModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      setError('New password and confirm password do not match');
+      return;
+    }
+
+    try {
+      await api.post('/change-password', {
+        userId: user.id,
+        currentPassword,
+        newPassword,
+      });
+      setSuccess(true);
+      setError('');
+      setOpenModal(false);
+    } catch (err) {
+      setError(err.response?.data?.message || 'An error occurred while changing the password');
+    }
+  };
+
   return (
     <Container maxWidth="sm">
       <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
         <Box display="flex" flexDirection="column" alignItems="center">
-          <Avatar sx={{ bgcolor: 'primary.main', mb: 2 }}>
-            <PersonIcon />
-          </Avatar>
           <Typography variant="h5" gutterBottom>
             Profile Information
           </Typography>
@@ -30,7 +58,7 @@ function Profile({ user }) {
           </Typography>
           <TextField
             fullWidth
-            value={user?.name || ''}
+            value={user?.name || 'N/A'}
             InputProps={{
               readOnly: true,
             }}
@@ -41,7 +69,7 @@ function Profile({ user }) {
           </Typography>
           <TextField
             fullWidth
-            value={user?.email || ''}
+            value={user?.email || 'N/A'}
             InputProps={{
               readOnly: true,
             }}
@@ -52,7 +80,7 @@ function Profile({ user }) {
           </Typography>
           <TextField
             fullWidth
-            value={user?.role || ''}
+            value={user?.role || 'N/A'}
             InputProps={{
               readOnly: true,
             }}
@@ -60,15 +88,51 @@ function Profile({ user }) {
           />
         </Box>
         <Divider sx={{ my: 2 }} />
-        <Box display="flex" justifyContent="space-between">
-          <Button variant="outlined" color="secondary">
+        <Box>
+          <Button variant="outlined" color="secondary" onClick={() => setOpenModal(true)}>
             Change Password
-          </Button>
-          <Button variant="contained" color="primary">
-            Update Profile
           </Button>
         </Box>
       </Paper>
+      <Dialog open={openModal} onClose={() => setOpenModal(false)}>
+        <DialogTitle>Change Password</DialogTitle>
+        <DialogContent>
+          {error && <Alert severity="error">{error}</Alert>}
+          {success && <Alert severity="success">Password updated successfully!</Alert>}
+          <TextField
+            fullWidth
+            label="Current Password"
+            type="password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            margin="normal"
+          />
+          <TextField
+            fullWidth
+            label="New Password"
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            margin="normal"
+          />
+          <TextField
+            fullWidth
+            label="Confirm New Password"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            margin="normal"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenModal(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleChangePassword} color="primary" variant="contained">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

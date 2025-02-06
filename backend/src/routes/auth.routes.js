@@ -83,5 +83,27 @@ router.post('/login', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ *   /api/change-password:
+ *     post:
+ *       summary: Change user password
+ *       tags: [Auth]
+ *       responses:
+ *         200:
+ *           description: Password updated successfully
+ */ 
+router.post('/change-password', async (req, res) => {
+  try {
+    const { userId, currentPassword, newPassword } = req.body;
+    await authService.changePassword(userId, currentPassword, newPassword);
+    res.json({ success: true, message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+
 
 module.exports = router;

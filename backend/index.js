@@ -10,6 +10,7 @@ const projectRoutes = require('./src/routes/projects.routes');
 const taskRoutes = require('./src/routes/tasks.routes');
 const notificationRoutes = require('./src/routes/notifications.routes');
 const usersRoutes = require('./src/routes/users.routes');
+const emailRoutes = require('./src/routes/email.routes');
 
 const app = express();
 const port = 5001;
@@ -27,6 +28,7 @@ app.use('/api/projects', authMiddleware, projectRoutes);
 app.use('/api/tasks', authMiddleware, taskRoutes);
 app.use('/api/notifications', authMiddleware, notificationRoutes);
 app.use('/api/users', authMiddleware, usersRoutes);
+app.use('/api/email', authMiddleware, emailRoutes);
 
 app.get('/', (req, res) => {
   res.json({

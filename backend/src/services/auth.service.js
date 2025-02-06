@@ -1,6 +1,7 @@
 const pool = require('../config/database');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const emailService = require('./email.service');
 
 class AuthService {
   /**
@@ -74,6 +75,30 @@ class AuthService {
         { expiresIn: '1h' }
       ),
     };
+  }
+
+  /**
+   * Change user's password
+   * @param {number} userId - User's ID
+   * @param {string} currentPassword - Current password
+   * @param {string} newPassword - New password
+   * @returns {boolean} - Success status
+   */
+  async changePassword(userId, currentPassword, newPassword) {
+    const [users] = await pool.query('SELECT email, password FROM Users WHERE id = ?', [userId]);
+    if (users.length === 0) {
+      throw new Error('User not found');
+    }
+    const user = users[0];
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isPasswordValid) {
+      throw new Error('Current password is incorrect');
+    }
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    await pool.query('UPDATE Users SET password = ? WHERE id = ?', [hashedNewPassword, userId]);
+    await emailService.sendPasswordChangedEmail(user.email);
+
+    return true;
   }
 }
 
