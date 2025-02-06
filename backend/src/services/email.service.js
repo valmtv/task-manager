@@ -5,23 +5,26 @@ class EmailService {
     this.transporter = nodemailer.createTransport({
       service: 'Gmail',
       auth: {
-        user: process.env.EMAIL_USER, // gmail account to send emails from 
-        pass: process.env.EMAIL_PASSWORD, // password to that account 
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD,
       },
     });
   }
 
   /**
-   * Send an email to the user with a link to reset their password
-   * @param {string} email - The email address of the user
-   * @param {string} token - The token to reset the password
+   * Send a verification code to the user's email
+   * @param {string} email - Recipient's email address
+   * @param {string} code - Verification code
+   * @param {string} type - Type of verification ('email_verification' or 'password_reset')
    */
-  async sendPasswordChangedEmail(email) {
+  async sendVerificationCode(email, code, type) {
+    const subject = type === 'email_verification' ? 'Email Verification Code' : 'Password Reset Code';
+    const text = `Your verification code is: ${code}. It will expire in 5 minutes.`;
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: 'Your Password Has Been Changed',
-      text: `Your password has been successfully updated. If you did not make this change, please contact support immediately.`,
+      subject,
+      text,
     };
 
     await this.transporter.sendMail(mailOptions);

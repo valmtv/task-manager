@@ -1,15 +1,23 @@
 const jwt = require('jsonwebtoken');
+const pool = require('../config/database');
 
-const authMiddleware = (req, res, next) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ error: 'Access denied. No token provided.' });
-
+const authMiddleware = async (req, res, next) => {
   try {
+    const authHeader = req.header('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, message: 'Unauthorized: Missing or invalid token' });
+    }
+    const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_KEY);
-    req.user = decoded;
+    const [users] = await pool.query('SELECT id, role_id FROM Users WHERE id = ?', [decoded.id]);
+    if (users.length === 0) {
+      return res.status(401).json({ success: false, message: 'Unauthorized: User not found' });
+    }
+    req.user = users[0];
     next();
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error('Authentication error:', err.message);
+    return res.status(401).json({ success: false, message: 'Unauthorized: Invalid token' });
   }
 };
 

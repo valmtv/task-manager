@@ -154,6 +154,16 @@ CREATE TABLE ProjectTags (
     FOREIGN KEY (tag_id) REFERENCES Tags(id) ON DELETE CASCADE
 );
 
+CREATE TABLE VerificationCodes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    code VARCHAR(6) NOT NULL,
+    type ENUM('email_verification', 'password_reset') NOT NULL,
+    expires_at DATETIME NOT NULL,
+    used BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
+);
+
 -- Insert initial data into Projects table
 INSERT INTO Projects (name, description, start_date, end_date, status) VALUES
 ('Website Redesign', 'Redesign the company website to improve user experience.', '2025-01-01', '2025-03-31', 'Not Started'),
