@@ -46,6 +46,8 @@ MYSQL_USER='username'
 MYSQL_PASSWORD='password'
 MYSQL_DATABASE='database name(eg. task-manager)'
 JWT_KEY='secure key'
+EMAIL_USER='email' // for sending emails
+EMAIL_PASSWORD='password' // password to that email(App password might be needed)
 ```
 
 ### 5. Versions Used 
