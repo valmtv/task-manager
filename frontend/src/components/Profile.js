@@ -27,11 +27,9 @@ function Profile({ initialUser }) {
   const [editingField, setEditingField] = useState(null);
   const [editedValue, setEditedValue] = useState('');
   const [originalValue, setOriginalValue] = useState('');
-
   const [emailVerificationCode, setEmailVerificationCode] = useState('');
   const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
   const [emailVerificationError, setEmailVerificationError] = useState('');
-
   const [passwordResetCode, setPasswordResetCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [isResettingPassword, setIsResettingPassword] = useState(false);
@@ -46,7 +44,6 @@ function Profile({ initialUser }) {
         console.error('Failed to fetch user data:', err);
       }
     };
-
     fetchUserData();
   }, []);
 
@@ -61,9 +58,25 @@ function Profile({ initialUser }) {
     setEditedValue(originalValue);
   };
 
-  const saveChanges = (field) => {
-    console.log(`Saving changes for ${field}:`, editedValue);
-    setEditingField(null);
+  const saveChanges = async (field) => {
+    try {
+      let updatedUser = { ...user };
+      if (field === 'name') {
+        await api.put('/users/update-name', { name: editedValue });
+        updatedUser.name = editedValue;
+      } else if (field === 'email') {
+        await api.put('/users/update-email', { email: editedValue });
+        updatedUser.email = editedValue;
+        updatedUser.email_confirmed = false;
+      } else if (field === 'phone_number') {
+        await api.put('/users/update-phone', { phone_number: editedValue });
+        updatedUser.phone_number = editedValue;
+      }
+      setUser(updatedUser);
+      setEditingField(null);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to save changes');
+    }
   };
 
   const handleSendVerificationCode = async () => {
@@ -82,9 +95,7 @@ function Profile({ initialUser }) {
       setIsVerifyingEmail(false);
       setEmailVerificationCode('');
       setEmailVerificationError('');
-
       setUser({ ...user, email_confirmed: true });
-
       alert('Email verified successfully!');
     } catch (err) {
       setEmailVerificationError(err.response?.data?.message || 'Failed to verify email');
@@ -123,7 +134,6 @@ function Profile({ initialUser }) {
             Profile Information
           </Typography>
         </Box>
-
         <Box mb={3}>
           <Typography variant="h6" gutterBottom>
             Personal Information
@@ -170,14 +180,11 @@ function Profile({ initialUser }) {
             ))}
           </Grid>
         </Box>
-
         <Box mb={3}>
           <Typography variant="h6" gutterBottom>
             Security Information
           </Typography>
           <Divider sx={{ mb: 2 }} />
-
-          {/* Email Confirmation */}
           <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Typography variant="subtitle1" sx={{ flexGrow: 1 }}>Email Confirmation:</Typography>
             <Chip
@@ -210,7 +217,6 @@ function Profile({ initialUser }) {
               </>
             )}
           </Grid>
-
           <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Typography variant="subtitle1" sx={{ flexGrow: 1 }}>Phone Confirmation:</Typography>
             <Chip
@@ -225,8 +231,6 @@ function Profile({ initialUser }) {
               </Button>
             )}
           </Grid>
-
-          {/* Password Reset */}
           <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Typography variant="subtitle1" sx={{ flexGrow: 1 }}>Reset Password:</Typography>
             {user?.email_confirmed ? (

@@ -72,6 +72,42 @@ class UsersService {
     }
   }
 
+  /**
+   * Update the user's name
+   * @param {number} userId - The ID of the user
+   * @param {string} name - The new name
+   */
+  async updateName(userId, name) {
+    await pool.query('UPDATE Users SET name = ? WHERE id = ?', [name, userId]);
+  }
+
+  /**
+   * Update the user's email
+   * @param {number} userId - The ID of the user
+   * @param {string} email - The new email
+   */
+  async updateEmail(userId, email) {
+    const [existingUsers] = await pool.query('SELECT id FROM Users WHERE email = ?', [email]);
+    if (existingUsers.length > 0) {
+      throw new Error('Email is already in use');
+    }
+    await pool.query('UPDATE Users SET email = ? WHERE id = ?', [email, userId]);
+    await pool.query('DELETE FROM Confirmations WHERE user_id = ? AND type = ?', [userId, 'email']);
+  }
+
+  /**
+   * Update the user's phone number
+   * @param {number} userId - The ID of the user
+   * @param {string} phone_number - The new phone number
+   */
+  async updatePhone(userId, phone_number) {
+    const [existingUsers] = await pool.query('SELECT id FROM Users WHERE phone_number = ?', [phone_number]);
+    if (existingUsers.length > 0) {
+      throw new Error('Phone number is already in use');
+    }
+    await pool.query('UPDATE Users SET phone_number = ? WHERE id = ?', [phone_number, userId]);
+  }
+
 }
 
 module.exports = new UsersService();
