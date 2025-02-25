@@ -13,7 +13,7 @@ CREATE TABLE Users (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    phone_number VARCHAR(20) DEFAULT NULL,
+    phone_number VARCHAR(20) DEFAULT NULL UNIQUE,
     role_id INT NOT NULL,
     profile_picture_id INT DEFAULT NULL,
     FOREIGN KEY (role_id) REFERENCES Roles(id) ON DELETE CASCADE
@@ -33,12 +33,13 @@ CREATE TABLE ProfilePictures (
 ALTER TABLE Users
 ADD FOREIGN KEY (profile_picture_id) REFERENCES ProfilePictures(id) ON DELETE SET NULL;
 
--- Create the Confirmations table
+-- Create the Confirmations table with a status column
 CREATE TABLE Confirmations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     type ENUM('phone', 'email') NOT NULL,
     confirmed_at DATETIME DEFAULT NULL,
+    status ENUM('active', 'inactive') DEFAULT 'active',
     FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
 );
 
@@ -95,7 +96,7 @@ CREATE TABLE Resources (
 );
 
 -- Create the ProjectResources table
-CREATE TABLE ProjectResources ( 
+CREATE TABLE ProjectResources (
     project_id INT NOT NULL,
     resource_id INT NOT NULL,
     PRIMARY KEY (project_id, resource_id),
@@ -154,6 +155,7 @@ CREATE TABLE ProjectTags (
     FOREIGN KEY (tag_id) REFERENCES Tags(id) ON DELETE CASCADE
 );
 
+-- Create the VerificationCodes table
 CREATE TABLE VerificationCodes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -163,27 +165,3 @@ CREATE TABLE VerificationCodes (
     used BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
 );
-
--- Insert initial data into Projects table
-INSERT INTO Projects (name, description, start_date, end_date, status) VALUES
-('Website Redesign', 'Redesign the company website to improve user experience.', '2025-01-01', '2025-03-31', 'Not Started'),
-('Mobile App Development', 'Develop a mobile app for customer engagement.', '2025-02-01', '2025-06-30', 'In Progress'),
-('Database Migration', 'Migrate the old database to a new system.', '2024-12-01', '2025-01-15', 'Completed'),
-('Marketing Campaign', 'Launch a new marketing campaign for product promotion.', '2025-03-01', '2025-05-01', 'Not Started'),
-('Internal Tool Enhancement', 'Add new features to the internal task management tool.', '2025-01-10', '2025-04-15', 'In Progress');
-
--- Insert resources into Resources table
-INSERT INTO Resources (name, type, quantity, cost) VALUES
-('Laptop', 'Hardware', 10, 1000.00),
-('Project Management Software License', 'Software', 1, 500.00),
-('Design Software License', 'Software', 5, 300.00),
-('Marketing Budget', 'Budget', 1, 5000.00),
-('Development Tools', 'Hardware', 3, 1500.00);
-
--- Insert project resources into ProjectResources table
-INSERT INTO ProjectResources (project_id, resource_id) VALUES
-(1, 1),  -- Website Redesign project uses 10 laptops
-(1, 2),  -- Website Redesign project uses 1 project management software license
-(2, 3),  -- Mobile App Development project uses 5 design software licenses
-(3, 4),  -- Database Migration project uses 5000 marketing budget
-(4, 5);  -- Marketing Campaign project uses 3 development tools

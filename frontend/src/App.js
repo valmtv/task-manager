@@ -16,8 +16,7 @@ import AuthModal from './components/AuthModal';
 import ProtectedRoute from './components/ProtectedRoute';
 import Welcome from './components/Welcome';
 import Profile from './components/Profile';
-import { getAuthToken } from './api/api';
-import { jwtDecode } from 'jwt-decode';
+import { getAuthToken, fetchUserData } from './api/api';
 import AppBarUserMenu from './components/AppBarUserMenu';
 
 function App() {
@@ -26,18 +25,28 @@ function App() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = getAuthToken();
-    if (token) {
-      const decoded = jwtDecode(token);
-      setUser(decoded);
-    }
+    const loadUser = async () => {
+      const token = getAuthToken();
+      
+      if (token) {
+        try {
+          const userData = await fetchUserData();
+          setUser(userData);
+        } catch (error) {
+          console.error('Failed to load user data', error);
+          if (error.response && error.response.status === 401) {
+            localStorage.removeItem('token');
+          }
+        }
+      }
+    };
+
+    loadUser();
   }, []);
 
-
-
-  const handleLogout = async () => {
+  const handleLogout = () => {
     localStorage.removeItem('token');
-    await setUser(null);
+    setUser(null);
     navigate('/');
   };
 
@@ -80,7 +89,7 @@ function App() {
           <Route
             path="/tasks"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute user={user}>
                 <Tasks />
               </ProtectedRoute>
             }
@@ -88,7 +97,7 @@ function App() {
           <Route
             path="/notifications"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute user={user}>
                 <Notifications />
               </ProtectedRoute>
             }
@@ -96,8 +105,8 @@ function App() {
           <Route
             path="/profile"
             element={
-              <ProtectedRoute>
-                <Profile user={user} />
+              <ProtectedRoute user={user}>
+                <Profile user={user} setUser={setUser} />
               </ProtectedRoute>
             }
           />

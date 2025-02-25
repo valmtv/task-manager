@@ -111,15 +111,11 @@ router.post('/login', async (req, res) => {
 router.post('/verify-email/send-code', async (req, res) => {
   try {
     const { email } = req.body;
-
-    // Validate input
     if (!email) {
       return res.status(400).json({ success: false, message: 'Email is required' });
     }
 
-    // Send verification code
     await authService.sendVerificationCode(email, 'email_verification');
-
     res.json({ success: true, message: 'Verification code sent successfully' });
   } catch (err) {
     handleError(res, err);
@@ -157,15 +153,11 @@ router.post('/verify-email/send-code', async (req, res) => {
 router.post('/verify-email/confirm', async (req, res) => {
   try {
     const { email, code } = req.body;
-
-    // Validate input
     if (!email || !code) {
       return res.status(400).json({ success: false, message: 'Email and code are required' });
     }
 
-    // Verify the code
     await authService.verifyCode(email, code, 'email_verification');
-
     res.json({ success: true, message: 'Email verified successfully' });
   } catch (err) {
     handleError(res, err);
@@ -201,19 +193,14 @@ router.post('/verify-email/confirm', async (req, res) => {
 router.post('/reset-password/send-code', async (req, res) => {
   try {
     const { email } = req.body;
-
-    // Validate input
     if (!email) {
       return res.status(400).json({ success: false, message: 'Email is required' });
     }
 
-    // Check if the email is confirmed
     const isEmailConfirmed = await authService.isEmailConfirmed(email);
     if (!isEmailConfirmed) {
       return res.status(400).json({ success: false, message: 'Email not verified' });
     }
-
-    // Send password reset code
     await authService.sendVerificationCode(email, 'password_reset');
     res.json({ success: true, message: 'Password reset code sent successfully' });
   } catch (err) {
@@ -255,18 +242,12 @@ router.post('/reset-password/send-code', async (req, res) => {
 router.post('/reset-password/confirm', async (req, res) => {
   try {
     const { email, code, newPassword } = req.body;
-
-    // Validate input
     if (!email || !code || !newPassword) {
       return res.status(400).json({ success: false, message: 'Email, code, and new password are required' });
     }
 
-    // Verify the code
     await authService.verifyCode(email, code, 'password_reset');
-
-    // Update the password
     await authService.updatePassword(email, newPassword);
-
     res.json({ success: true, message: 'Password updated successfully' });
   } catch (err) {
     handleError(res, err);

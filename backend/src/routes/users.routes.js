@@ -93,4 +93,119 @@ router.get('/user', authMiddleware, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/users/update-name:
+ *   put:
+ *     summary: Update the user's name
+ *     security:
+ *       - bearerAuth: []
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Name updated successfully
+ *       400:
+ *         description: Invalid input
+ *       500:
+ *         description: Internal server error
+ */
+router.put('/update-name', authMiddleware, async (req, res) => {
+  try {
+    const { name } = req.body;
+    const userId = req.user.id;
+    await usersService.updateName(userId, name);
+    res.json({ success: true, message: 'Name updated successfully' });
+  } catch (err) {
+    handleError(res, err);
+  }
+});
+
+/**
+ * @swagger
+ * /api/users/update-email:
+ *   put:
+ *     summary: Update the user's email
+ *     security:
+ *       - bearerAuth: []
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Email updated successfully
+ *       400:
+ *         description: Invalid input or email already in use
+ *       500:
+ *         description: Internal server error
+ */
+
+router.put('/update-email', authMiddleware, async (req, res) => {
+  try {
+    const { email } = req.body;
+    const userId = req.user.id;
+    await usersService.updateEmail(userId, email);
+    res.json({ success: true, message: 'Email updated successfully. Please verify your new email.' });
+  } catch (err) {
+    handleError(res, err);
+  }
+});
+
+/**
+ * @swagger
+ * /api/users/update-phone:
+ *   put:
+ *     summary: Update the user's phone number
+ *     security:
+ *       - bearerAuth: []
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - phone_number
+ *             properties:
+ *               phone_number:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Phone number updated successfully
+ *       400:
+ *         description: Invalid input or phone number already in use
+ *       500:
+ *         description: Internal server error
+ */
+router.put('/update-phone', authMiddleware, async (req, res) => {
+  try {
+    const { phone_number } = req.body;
+    const userId = req.user.id;
+    await usersService.updatePhone(userId, phone_number);
+    res.json({ success: true, message: 'Phone number updated successfully' });
+  } catch (err) {
+    handleError(res, err);
+  }
+});
+
 module.exports = router;

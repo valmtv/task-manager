@@ -62,18 +62,12 @@ router.post('/', async (req, res) => {
     });
 
     const taskId = createdTask.id;
-
-    // Assign users to the task
     if (assigned_to && assigned_to.length > 0) {
       await taskService.assignUsersToTask(taskId, Array.isArray(assigned_to) ? assigned_to : [assigned_to]);
     }
-
-    // Add task dependencies
     if (dependent_task_id) {
       await taskService.addTaskDependency(taskId, dependent_task_id);
     }
-
-    // Add tags to the task
     if (tags && tags.length > 0) {
       await taskService.addTaskTags(taskId, Array.isArray(tags) ? tags : [tags]);
     }
