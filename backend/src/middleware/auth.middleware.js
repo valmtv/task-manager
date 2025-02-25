@@ -9,11 +9,11 @@ const authMiddleware = async (req, res, next) => {
     }
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_KEY);
-    const [users] = await pool.query('SELECT id, role_id FROM Users WHERE id = ?', [decoded.id]);
+    const [users] = await pool.query('SELECT id FROM Users WHERE id = ?', [decoded.id]);
     if (users.length === 0) {
       return res.status(401).json({ success: false, message: 'Unauthorized: User not found' });
     }
-    req.user = users[0];
+    req.user = { id: users[0].id };
     next();
   } catch (err) {
     console.error('Authentication error:', err.message);

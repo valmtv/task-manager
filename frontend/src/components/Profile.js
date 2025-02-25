@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Container,
   Typography,
@@ -22,8 +22,7 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import LockResetIcon from '@mui/icons-material/LockReset';
 import api from '../api/api';
 
-function Profile({ initialUser }) {
-  const [user, setUser] = useState(initialUser);
+function Profile({ user, setUser }) {
   const [editingField, setEditingField] = useState(null);
   const [editedValue, setEditedValue] = useState('');
   const [originalValue, setOriginalValue] = useState('');
@@ -35,17 +34,6 @@ function Profile({ initialUser }) {
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [passwordResetError, setPasswordResetError] = useState('');
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await api.get('/users/user');
-        setUser(response.data);
-      } catch (err) {
-        console.error('Failed to fetch user data:', err);
-      }
-    };
-    fetchUserData();
-  }, []);
 
   const startEditing = (field, value) => {
     setEditingField(field);

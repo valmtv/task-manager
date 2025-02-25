@@ -25,6 +25,16 @@ export const getUserRole = () => {
   return null;
 };
 
+export const fetchUserData = async () => {
+  try {
+    const response = await api.get('/users/user');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    throw error;
+  }
+};
+
 api.interceptors.request.use((config) => {
   const token = getAuthToken();
   if (token) {

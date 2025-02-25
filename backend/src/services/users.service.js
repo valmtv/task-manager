@@ -38,35 +38,44 @@ class UsersService {
   /**
    * Get the current user's data by ID
    * @param {number} userId - The ID of the user
-   * @returns {Object} - User data including confirmation status
-   */
+   * @returns {Object} - Complete user data including confirmation status
+  */
   async getUserById(userId) {
     try {
       const [users] = await pool.query(
         `
-        SELECT u.id, u.name, u.email, r.name AS role
+        SELECT u.id, u.name, u.email, u.phone_number, r.name AS role
         FROM Users u
         JOIN Roles r ON u.role_id = r.id
         WHERE u.id = ?
         `,
         [userId]
       );
+    
       if (users.length === 0) {
         throw new Error('User not found');
       }
+    
       const user = users[0];
-      const [confirmations] = await pool.query('SELECT type, confirmed_at FROM Confirmations WHERE user_id = ?', [userId]);
+      const [confirmations] = await pool.query(
+        'SELECT type, confirmed_at FROM Confirmations WHERE user_id = ?', 
+        [userId]
+      );
+    
       const confirmationStatus = {};
       confirmations.forEach(({ type, confirmed_at }) => {
         confirmationStatus[type] = !!confirmed_at;
       });
 
       return {
-        ...user,
-        email_confirmed: confirmationStatus.email,
-        phone_confirmed: confirmationStatus.phone,
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone_number: user.phone_number || null,
+        email_confirmed: confirmationStatus.email || false,
+        phone_confirmed: confirmationStatus.phone || false
       };
-
     } catch (err) {
       throw err;
     }
