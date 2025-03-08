@@ -1,10 +1,14 @@
 const express = require('express');
+const session = require('express-session');
+const passport = require('passport');
+require('dotenv').config();
+require('./src/config/passport');
+
 const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpecs = require('./src/config/swagger');
 
 const authMiddleware = require('./src/middleware/auth.middleware');
-
 const authRoutes = require('./src/routes/auth.routes');
 const projectRoutes = require('./src/routes/projects.routes');
 const taskRoutes = require('./src/routes/tasks.routes');
@@ -15,15 +19,37 @@ const emailRoutes = require('./src/routes/email.routes');
 const app = express();
 const port = 5001;
 
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:3000'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 app.use(express.json());
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use((req, res, next) => {
+  res.header('Cross-Origin-Opener-Policy', 'unsafe-none');
+  res.header('Cross-Origin-Embedder-Policy', 'unsafe-none');
+  res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+});
+
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
-// public routes
 app.use('/api', authRoutes);
 
-// protected routes
 app.use('/api/projects', authMiddleware, projectRoutes);
 app.use('/api/tasks', authMiddleware, taskRoutes);
 app.use('/api/notifications', authMiddleware, notificationRoutes);
@@ -34,7 +60,7 @@ app.get('/', (req, res) => {
   res.json({
     message: 'Project Management API',
     documentation: '/api-docs',
-    version: '1.0.0'
+    version: '1.0.0',
   });
 });
 

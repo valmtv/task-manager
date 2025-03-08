@@ -12,9 +12,11 @@ import {
   IconButton,
   InputAdornment,
   Typography,
+  Divider,
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { GoogleLogin } from "@react-oauth/google";
 import api, { setAuthToken, fetchUserData } from '../api/api';
 
 function AuthModal({ open, onClose, setUser, tab }) {
@@ -87,6 +89,37 @@ function AuthModal({ open, onClose, setUser, tab }) {
       console.error('Registration failed:', error);
       setError(error.response?.data?.message || 'Registration failed. Please try again.');
     }
+  };
+
+  const handleGoogleSuccess = async (response) => {
+    try {
+      setError('');
+      const res = await api.post("/auth/google", {
+        token: response.credential
+      });
+      
+      if (res.data.success && res.data.token) {
+        setAuthToken(res.data.token);
+        try {
+          const userData = await fetchUserData();
+          setUser(userData);
+          onClose();
+        } catch (userDataError) {
+          console.error("Error fetching user data:", userDataError);
+          setError('Authentication successful but failed to load user data.');
+        }
+      } else {
+        setError('Authentication failed. Please try again.');
+      }
+    } catch (error) {
+      console.error("Google login error:", error);
+      setError(error.response?.data?.message || 'Google login failed. Please try again.');
+    }
+  };
+
+  const handleGoogleFailure = (error) => {
+    console.error("Google login failed", error);
+    setError('Google login failed. Please try again.');
   };
 
   const handleKeyPress = (event) => {
@@ -188,6 +221,17 @@ function AuthModal({ open, onClose, setUser, tab }) {
             />
           </Box>
         )}
+        
+        <Divider sx={{ my: 2 }}>OR</Divider>
+        
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+          <GoogleLogin 
+            onSuccess={handleGoogleSuccess} 
+            onError={handleGoogleFailure}
+            useOneTap={false}
+            cookiePolicy="single_host_origin"
+          />
+        </Box>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="secondary">
