@@ -27,15 +27,25 @@ function App() {
   useEffect(() => {
     const loadUser = async () => {
       const token = getAuthToken();
-      
+
       if (token) {
         try {
           const userData = await fetchUserData();
           setUser(userData);
         } catch (error) {
           console.error('Failed to load user data', error);
-          if (error.response && error.response.status === 401) {
-            localStorage.removeItem('token');
+          if (error.response) {
+            switch (error.response.status) {
+              case 401: 
+                console.error('Invalid token' + error.response);
+                break;
+              case 403:
+                console.error('Forbidden:', error.response);
+                localStorage.removeItem('token');
+                break;
+              default:
+                console.error('Unexpected error:', error.response);
+            }
           }
         }
       }

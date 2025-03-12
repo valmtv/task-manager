@@ -3,7 +3,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const emailService = require('./email.service');
 const nodemailer = require('nodemailer');
-
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 class AuthService {
   /**
@@ -68,6 +69,48 @@ class AuthService {
     };
   }
 
+  /**
+   * Authenticate user with Google
+   * @param {string} token - Google ID token
+   * @returns {Object} - JWT token and user ID
+   */
+  async googleAuth(token) {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const email = payload.email;
+    const name = payload.name;
+    const [rows] = await pool.query(
+      'SELECT * FROM Users WHERE email = ?',
+      [email]
+    );
+
+    let user;
+    if (rows.length > 0) {
+      user = rows[0];
+    } else {
+      const [roles] = await pool.query('SELECT id FROM Roles WHERE name = ?', ['Team Member']);
+      const roleId = roles[0].id;
+      const [result] = await pool.query(
+        'INSERT INTO Users (name, email, password, role_id) VALUES (?, ?, ?, ?)',
+        [name, email, '', roleId]
+      );
+
+      user = { id: result.insertId, name, email, role_id: roleId };
+    }
+
+    return {
+      token: jwt.sign(
+        { id: user.id },
+        process.env.JWT_KEY,
+        { expiresIn: '1h' }
+      ),
+      userId: user.id
+    };
+  }
 
   /**
    * Send a verification code to the user's email

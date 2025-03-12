@@ -2,6 +2,52 @@ const express = require('express');
 const router = express.Router();
 const authService = require('../services/auth.service');
 const handleError = require('../utils/error.handler');
+require('dotenv').config();
+const passport = require('passport');
+
+/**
+ * @swagger
+ *   /auth/google:
+ *     post:
+ *       summary: Redirect to Google OAuth for authentication
+ *       tags: [Auth]
+ *       responses:
+ *         302:
+ *           description: Redirect to Google OAuth
+ */ 
+router.post('/auth/google', async (req, res) => {
+  try {
+    const { token } = req.body;
+    const result = await authService.googleAuth(token);
+    res.json({ success: true, token: result.token, userId: result.userId });
+  } catch (error) {
+    console.error('Google authentication error:', error);
+    res.status(401).json({ success: false, message: 'Authentication failed' });
+  }
+});
+
+/**
+ * @swagger
+ *   /auth/google/callback:
+ *     get:
+ *       summary: Google OAuth callback
+ *       tags: [Auth]
+ *       responses:
+ *         302:
+ *           description: Redirect to Google OAuth
+ *           
+ */
+router.get(
+  '/auth/google/callback',
+  passport.authenticate('google', {
+    failureRedirect: 'http://localhost:3000/login',
+    session: false,
+  }),
+  (req, res) => {
+    const token = process.env.JWT_KEY;
+    res.redirect(`http://localhost:3000/projects?token=${token}`);
+  }
+);
 
 /**
  * @swagger
