@@ -13,9 +13,18 @@ import {
   InputAdornment,
   Typography,
   Divider,
+  Stack,
+  useMediaQuery,
+  useTheme,
+  CircularProgress,
+  Alert,
+  Fade
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import EmailIcon from '@mui/icons-material/Email';
+import LockIcon from '@mui/icons-material/Lock';
+import PersonIcon from '@mui/icons-material/Person';
 import { GoogleLogin } from "@react-oauth/google";
 import api, { setAuthToken, fetchUserData } from '../api/api';
 
@@ -26,6 +35,11 @@ function AuthModal({ open, onClose, setUser, tab }) {
   const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState('');
+
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     if (open) {
@@ -34,6 +48,7 @@ function AuthModal({ open, onClose, setUser, tab }) {
       setPassword('');
       setName('');
       setError('');
+      setSuccess('');
     }
   }, [open, tab]);
 
@@ -44,6 +59,7 @@ function AuthModal({ open, onClose, setUser, tab }) {
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
     setError('');
+    setSuccess('');
   };
 
   const handleLogin = async () => {
@@ -53,16 +69,22 @@ function AuthModal({ open, onClose, setUser, tab }) {
     }
 
     try {
+      setLoading(true);
       setError('');
       const response = await api.post('/login', { identifier, password });
       const { token } = response.data;
       setAuthToken(token);
       const userData = await fetchUserData();
-      setUser(userData);
-      onClose();
+      setSuccess('Login successful! Redirecting...');
+      setTimeout(() => {
+        setUser(userData);
+        onClose();
+      }, 1000);
     } catch (error) {
       console.error('Login failed:', error);
       setError(error.response?.data?.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -73,7 +95,8 @@ function AuthModal({ open, onClose, setUser, tab }) {
     }
 
     try {
-      setError('');      
+      setLoading(true);
+      setError('');
       const response = await api.post('/register', { 
         name, 
         email: identifier, 
@@ -82,17 +105,22 @@ function AuthModal({ open, onClose, setUser, tab }) {
       const { token } = response.data;
       setAuthToken(token);
       const userData = await fetchUserData();
-      setUser(userData);      
-      onClose();
-      
+      setSuccess('Registration successful! Setting up your account...');
+      setTimeout(() => {
+        setUser(userData);      
+        onClose();
+      }, 1000);
     } catch (error) {
       console.error('Registration failed:', error);
       setError(error.response?.data?.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleGoogleSuccess = async (response) => {
     try {
+      setLoading(true);
       setError('');
       const res = await api.post("/auth/google", {
         token: response.credential
@@ -102,8 +130,11 @@ function AuthModal({ open, onClose, setUser, tab }) {
         setAuthToken(res.data.token);
         try {
           const userData = await fetchUserData();
-          setUser(userData);
-          onClose();
+          setSuccess('Google login successful! Redirecting...');
+          setTimeout(() => {
+            setUser(userData);
+            onClose();
+          }, 1000);
         } catch (userDataError) {
           console.error("Error fetching user data:", userDataError);
           setError('Authentication successful but failed to load user data.');
@@ -114,6 +145,8 @@ function AuthModal({ open, onClose, setUser, tab }) {
     } catch (error) {
       console.error("Google login error:", error);
       setError(error.response?.data?.message || 'Google login failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -135,21 +168,58 @@ function AuthModal({ open, onClose, setUser, tab }) {
   return (
     <Dialog 
       open={open} 
-      onClose={onClose}
+      onClose={loading ? null : onClose}
       maxWidth="xs" 
       fullWidth
+      fullScreen={fullScreen}
+      PaperProps={{
+        sx: {
+          borderRadius: { xs: 0, sm: '1rem' },
+          minHeight: { xs: '100%', sm: 'auto' }
+        }
+      }}
     >
-      <DialogTitle>
-        <Tabs value={tabValue} onChange={handleTabChange} centered>
+      <DialogTitle sx={{ pb: 0, pt: '1rem' }}>
+        <Tabs 
+          value={tabValue} 
+          onChange={handleTabChange} 
+          centered
+          variant="fullWidth"
+          sx={{
+            '& .MuiTab-root': {
+              fontWeight: 'bold',
+              fontSize: '1rem',
+              py: '1rem',
+              textTransform: 'none'
+            }
+          }}
+        >
           <Tab label="Login" />
           <Tab label="Sign Up" />
         </Tabs>
       </DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{ p: { xs: '1rem', sm: '1.5rem' }, pt: { xs: '1rem', sm: '1.5rem' } }}>
         {error && (
-          <Typography color="error" variant="body2" sx={{ mb: 2, mt: 1 }}>
-            {error}
-          </Typography>
+          <Fade in={!!error}>
+            <Alert 
+              severity="error" 
+              sx={{ mb: '1rem' }}
+              onClose={() => setError('')}
+            >
+              {error}
+            </Alert>
+          </Fade>
+        )}
+        
+        {success && (
+          <Fade in={!!success}>
+            <Alert 
+              severity="success" 
+              sx={{ mb: '1rem' }}
+            >
+              {success}
+            </Alert>
+          </Fade>
         )}
         
         {tabValue === 0 ? (
@@ -162,6 +232,14 @@ function AuthModal({ open, onClose, setUser, tab }) {
               margin="normal"
               onKeyPress={handleKeyPress}
               autoFocus
+              disabled={loading}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <EmailIcon color="primary" />
+                  </InputAdornment>
+                ),
+              }}
             />
             <TextField
               fullWidth
@@ -171,10 +249,20 @@ function AuthModal({ open, onClose, setUser, tab }) {
               onChange={(e) => setPassword(e.target.value)}
               margin="normal"
               onKeyPress={handleKeyPress}
+              disabled={loading}
               InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockIcon color="primary" />
+                  </InputAdornment>
+                ),
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton onClick={toggleShowPassword} edge="end">
+                    <IconButton 
+                      onClick={toggleShowPassword} 
+                      edge="end"
+                      disabled={loading}
+                    >
                       {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
                     </IconButton>
                   </InputAdornment>
@@ -192,6 +280,14 @@ function AuthModal({ open, onClose, setUser, tab }) {
               margin="normal"
               onKeyPress={handleKeyPress}
               autoFocus
+              disabled={loading}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <PersonIcon color="primary" />
+                  </InputAdornment>
+                ),
+              }}
             />
             <TextField
               fullWidth
@@ -200,6 +296,14 @@ function AuthModal({ open, onClose, setUser, tab }) {
               onChange={(e) => setIdentifier(e.target.value)}
               margin="normal"
               onKeyPress={handleKeyPress}
+              disabled={loading}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <EmailIcon color="primary" />
+                  </InputAdornment>
+                ),
+              }}
             />
             <TextField
               fullWidth
@@ -209,10 +313,20 @@ function AuthModal({ open, onClose, setUser, tab }) {
               onChange={(e) => setPassword(e.target.value)}
               margin="normal"
               onKeyPress={handleKeyPress}
+              disabled={loading}
               InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockIcon color="primary" />
+                  </InputAdornment>
+                ),
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton onClick={toggleShowPassword} edge="end">
+                    <IconButton 
+                      onClick={toggleShowPassword} 
+                      edge="end"
+                      disabled={loading}
+                    >
                       {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
                     </IconButton>
                   </InputAdornment>
@@ -222,26 +336,69 @@ function AuthModal({ open, onClose, setUser, tab }) {
           </Box>
         )}
         
-        <Divider sx={{ my: 2 }}>OR</Divider>
+        <Stack 
+          direction="row" 
+          alignItems="center" 
+          sx={{ my: '1.5rem' }}
+        >
+          <Divider sx={{ flex: 1 }} />
+          <Typography 
+            variant="body2" 
+            color="text.secondary" 
+            sx={{ px: '1rem' }}
+          >
+            OR
+          </Typography>
+          <Divider sx={{ flex: 1 }} />
+        </Stack>
         
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+        <Box width="100%">
           <GoogleLogin 
             onSuccess={handleGoogleSuccess} 
             onError={handleGoogleFailure}
             useOneTap={false}
             cookiePolicy="single_host_origin"
+            disabled={loading}
+            theme="filled_blue"
+            size="large"
+            style={{ width: '100%' }}
           />
         </Box>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="secondary">
+      <DialogActions sx={{ px: '1.5rem', pb: '1.5rem', pt: 0, justifyContent: 'center', gap: '1rem' }}>
+        <Button 
+          onClick={onClose} 
+          disabled={loading}
+          sx={{ 
+            fontWeight: 'medium', 
+            px: '1.75rem',
+            py: '0.5rem',
+            color: 'text.secondary',
+            borderRadius: '0.5rem',
+            textTransform: 'none',
+            fontSize: '0.9rem'
+          }}
+        >
           Cancel
         </Button>
         <Button 
           onClick={tabValue === 0 ? handleLogin : handleRegister} 
           color="primary"
+          variant="contained"
+          disabled={loading}
+          sx={{ 
+            fontWeight: 'bold', 
+            px: '2.5rem', 
+            py: '0.5rem',
+            textTransform: 'none',
+            borderRadius: '0.5rem',
+            fontSize: '0.9rem'
+          }}
+          startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
         >
-          {tabValue === 0 ? 'Login' : 'Sign Up'}
+          {loading 
+            ? (tabValue === 0 ? 'Logging in...' : 'Signing up...') 
+            : (tabValue === 0 ? 'Login' : 'Sign Up')}
         </Button>
       </DialogActions>
     </Dialog>

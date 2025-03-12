@@ -2,17 +2,8 @@ const express = require('express');
 const router = express.Router();
 const authService = require('../services/auth.service');
 const handleError = require('../utils/error.handler');
-
-const pool = require('../config/database');
-const jwt = require('jsonwebtoken');
-
 require('dotenv').config();
-const { OAuth2Client } = require('google-auth-library');
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
-
 const passport = require('passport');
-
 
 /**
  * @swagger
@@ -27,40 +18,8 @@ const passport = require('passport');
 router.post('/auth/google', async (req, res) => {
   try {
     const { token } = req.body;
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-
-    const payload = ticket.getPayload();
-    const email = payload.email;
-    const name = payload.name;
-    const [rows] = await pool.query(
-      'SELECT * FROM Users WHERE email = ?',
-      [email]
-    );
-
-    let user;
-    if (rows.length > 0) {
-      user = rows[0];
-    } else {
-      const [roles] = await pool.query('SELECT id FROM Roles WHERE name = ?', ['Team Member']);
-      const roleId = roles[0].id;
-      const [result] = await pool.query(
-        'INSERT INTO Users (name, email, password, role_id) VALUES (?, ?, ?, ?)',
-        [name, email, '', roleId]
-      );
-
-      user = { id: result.insertId, name, email, role_id: roleId };
-    }
-
-    const jwtToken = jwt.sign(
-      { id: user.id },
-      process.env.JWT_KEY,
-      { expiresIn: '1h' }
-    );
-
-    res.json({ success: true, token: jwtToken, userId: user.id });
+    const result = await authService.googleAuth(token);
+    res.json({ success: true, token: result.token, userId: result.userId });
   } catch (error) {
     console.error('Google authentication error:', error);
     res.status(401).json({ success: false, message: 'Authentication failed' });
@@ -89,8 +48,6 @@ router.get(
     res.redirect(`http://localhost:3000/projects?token=${token}`);
   }
 );
-
-
 
 /**
  * @swagger

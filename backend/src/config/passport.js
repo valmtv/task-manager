@@ -1,6 +1,6 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const pool = require('../config/database'); // Use existing pool
+const pool = require('../config/database');
 
 passport.use(
   new GoogleStrategy(
@@ -13,8 +13,6 @@ passport.use(
       try {
         const email = profile.emails[0].value;
         const name = profile.displayName;
-
-        // Check if user exists
         const [rows] = await pool.execute(
           'SELECT * FROM Users WHERE email = ?',
           [email]
@@ -22,9 +20,8 @@ passport.use(
 
         let user;
         if (rows.length > 0) {
-          user = rows[0]; // User already exists
+          user = rows[0];
         } else {
-          // Insert new user with default role (Team Member - ID 3)
           const [result] = await pool.execute(
             'INSERT INTO Users (name, email, password, role_id) VALUES (?, ?, ?, ?)',
             [name, email, '', 3]
